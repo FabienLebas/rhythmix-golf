@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tempo Golf</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--tx:#1b2a1f;--mut:#667a6b;--ac:#2f7d4f;--ac2:#e9f3ec;--bd:#dde3dc;--onac:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a14;--card:#1b261e;--tx:#e8f0ea;--mut:#9aaa9e;--ac:#5fc088;--ac2:#223428;--bd:#2c3b30;--onac:#0d1a11;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a14;--card:#1b261e;--tx:#e8f0ea;--mut:#9aaa9e;--ac:#5fc088;--ac2:#223428;--bd:#2c3b30;--onac:#0d1a11;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:480px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:14px}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--mut);font-weight:600}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:15px}
+.seg button.on{background:var(--ac);color:var(--onac);border-color:var(--ac)}
+.row{display:flex;gap:10px;margin-bottom:10px}
+.row label{flex:1;font-size:13px;color:var(--mut)}
+input[type=number]{width:100%;box-sizing:border-box;font-size:22px;padding:8px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin-top:4px}
+input[type=range]{width:100%}
+.info{background:var(--ac2);border-radius:10px;padding:10px;font-size:14px;margin:8px 0}
+.big{width:100%;padding:16px;font-size:18px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-weight:600}
+.flash{height:64px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--ac);margin:8px 0}
+.small{font-size:13px;color:var(--mut)}
+.btn2{padding:10px 12px;border-radius:10px;border:1px solid var(--ac);background:transparent;color:var(--ac);font-size:14px;margin:4px 4px 0 0}
+#modes button{padding:14px 8px;font-size:17px;font-weight:700;line-height:1.25}
+#modes small{font-weight:400;font-size:12px}
+:root[data-mode="putt"]{--ac:#2f6fb0;--ac2:#e6eef8}
+@media (prefers-color-scheme:dark){:root[data-mode="putt"]:not([data-theme="light"]){--ac:#6fb1ee;--ac2:#1f2d3d}}
+:root[data-mode="putt"][data-theme="dark"]{--ac:#6fb1ee;--ac2:#1f2d3d}
+</style>
+</head>
+<body>
+<main>
+<h1>⛳ Tempo Golf</h1>
+<div class="seg" id="modes">
+<button data-m="grand">⛳ Grand jeu<br><small>tempo 3 : 1</small></button>
+<button data-m="putt">🏌️ Putting<br><small>tempo 2 : 1</small></button>
+</div>
+
+<div class="card">
+<h2 id="mt">Jouer le tempo</h2>
+<div class="row">
+<label>Montée (images à 30/s)<input type="number" id="b" min="1" step="any" inputmode="decimal"></label>
+<label>Descente (images à 30/s)<input type="number" id="d" min="1" step="any" inputmode="decimal"></label>
+</div>
+<label class="small"><input type="checkbox" id="lock"> Garder le ratio quand je modifie un chiffre</label>
+<label class="small" style="display:block;margin-top:8px">Vitesse du swing : <span id="sv"></span> %
+<input type="range" id="speed" min="60" max="140" step="1"></label>
+<button class="btn2" id="reset">↺ Valeurs par défaut</button>
+<div class="info" id="info"></div>
+<label class="small">Pause entre deux swings : <span id="pv"></span> s
+<input type="range" id="pause" min="1" max="8" step="0.5"></label>
+<div class="flash" id="flash">&nbsp;</div>
+<button class="big" id="go">▶ Démarrer</button>
+<p class="small">Trois sons par swing : départ (grave), sommet du backswing (moyen), impact (aigu). Écouteurs ou haut-parleur de voiture.</p>
+</div>
+
+<div class="card">
+<h2 id="vt">Analyser ma vidéo</h2>
+<p class="small" id="vnote" style="margin:0 0 8px">📱 Filme-toi <b>de face</b> (face à la caméra), téléphone immobile, golfeur entier dans l’image, avec le son : le bruit de la balle sert à repérer l’impact.</p>
+<input type="file" id="vf" accept="video/*">
+<div style="position:relative;margin-top:8px">
+<video id="vid" playsinline muted preload="auto" style="width:100%;max-height:48vh;border-radius:10px;background:#000;display:block;object-fit:contain"></video>
+<div id="vbadge" style="position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:3px 8px;font-size:13px"></div>
+</div>
+<div id="ov" style="position:relative;height:14px;background:var(--ac2);border-radius:7px;margin:12px 0 8px">
+<span id="o1" style="position:absolute;top:0;width:6px;height:14px;margin-left:-3px;border-radius:3px;background:#2f9e5a;display:none"></span>
+<span id="o2" style="position:absolute;top:0;width:6px;height:14px;margin-left:-3px;border-radius:3px;background:#e08a1e;display:none"></span>
+<span id="o3" style="position:absolute;top:0;width:6px;height:14px;margin-left:-3px;border-radius:3px;background:#d6453d;display:none"></span>
+<span id="ph" style="position:absolute;top:-3px;width:3px;height:20px;margin-left:-1px;border-radius:2px;background:var(--tx)"></span>
+</div>
+<canvas id="strip" style="width:100%;height:76px;touch-action:none;border-radius:10px;background:var(--bg);border:1px solid var(--bd)"></canvas>
+<div class="seg" style="margin-top:8px"><button id="m5">−5</button><button id="m1">◀ −1</button><button id="p1">+1 ▶</button><button id="p5">+5</button></div>
+<div class="seg"><button id="k1">Départ —</button><button id="k2">Sommet —</button><button id="k3">Impact —</button></div>
+<div class="small" id="vhint">Charge une vidéo : l’app détecte la cadence, analyse chaque image et place les trois repères toute seule.</div>
+<div class="info" id="vres">—</div>
+<div id="vsug"></div>
+<div class="row" style="margin-top:10px">
+<label>Images/s (détectées)<input type="number" id="fps" value="60" inputmode="decimal"></label>
+<label>Ralenti ×<input type="number" id="slow" value="1" inputmode="decimal"></label>
+</div>
+<p class="small">Fais glisser la bande d’images comme dans un logiciel de montage. Touche Départ, Sommet ou Impact pour le sélectionner : en faisant glisser, le repère suit l’image affichée sous le trait blanc. Retouche le même bouton pour le désélectionner.</p>
+</div>
+
+</main>
+
+<script>
+var $=function(id){return document.getElementById(id)};
+var S={mode:"grand",unit:"img",pause:3,lock:true,sp:100,grand:{b:27,d:9},putt:{b:20,d:10}};
+try{var x=localStorage.getItem("tg2");if(x)S=Object.assign(S,JSON.parse(x))}catch(e){}
+if(S.unit!=="img"){["grand","putt"].forEach(function(k){S[k].b=S[k].b*30/1000;S[k].d=S[k].d*30/1000});S.unit="img"}
+S.sp=100;
+function save(){try{localStorage.setItem("tg2",JSON.stringify(S))}catch(e){}}
+function toMs(v){return S.unit==="img"?v*1000/30:v}
+function fromMs(ms){return S.unit==="img"?Math.round(ms*30/100)/10:Math.round(ms)}
+function fmt(n){return n.toFixed(2).replace(".",",")}
+
+function render(){
+  document.documentElement.dataset.mode=S.mode;
+  $("mt").textContent=S.mode==="grand"?"Métronome · grand jeu 3:1":"Métronome · putting 2:1";
+  $("vt").textContent=S.mode==="grand"?"Analyser un grand jeu":"Analyser un putt";
+  document.querySelectorAll("#modes button").forEach(function(e){e.classList.toggle("on",e.dataset.m===S.mode)});
+  var p=S[S.mode];
+  fields();
+  $("pause").value=S.pause;$("pv").textContent=S.pause;
+  $("lock").checked=S.lock;
+  $("speed").value=S.sp;$("sv").textContent=S.sp;
+  renderInfo();
+}
+function sh(v){return S.unit==="img"?Math.round(v*10)/10:Math.round(v)}
+function fields(){var p=S[S.mode];$("b").value=sh(p.b);$("d").value=sh(p.d)}
+function renderInfo(){
+  var p=S[S.mode],b=toMs(p.b)/1000,d=toMs(p.d)/1000;
+  $("info").textContent="Montée "+fmt(b)+" s · Descente "+fmt(d)+" s · Ratio "+(b/d).toFixed(2).replace(".",",")+":1 · Swing "+fmt(b+d)+" s";
+}
+document.querySelectorAll("#modes button").forEach(function(e){e.onclick=function(){S.mode=e.dataset.m;S.sp=100;save();render();if(!busy&&lastQ)detect()}});
+$("b").oninput=function(){var v=parseFloat(this.value),p=S[S.mode];if(v>0){var r=p.b/p.d;p.b=v;if(S.lock){p.d=v/r;$("d").value=sh(p.d)}S.sp=100;$("speed").value=100;$("sv").textContent=100;save();renderInfo()}};
+$("d").oninput=function(){var v=parseFloat(this.value),p=S[S.mode];if(v>0){var r=p.b/p.d;p.d=v;if(S.lock){p.b=v*r;$("b").value=sh(p.b)}S.sp=100;$("speed").value=100;$("sv").textContent=100;save();renderInfo()}};
+$("speed").oninput=function(){var n=parseFloat(this.value),f=n/S.sp,p=S[S.mode];p.b*=f;p.d*=f;S.sp=n;$("sv").textContent=n;fields();save();renderInfo()};
+$("lock").onchange=function(){S.lock=this.checked;save()};
+$("reset").onclick=function(){var D={grand:{b:27,d:9},putt:{b:20,d:10}}[S.mode],k=S.unit==="img"?1:1000/30;S[S.mode]={b:D.b*k,d:D.d*k};S.sp=100;save();render()};
+$("pause").oninput=function(){S.pause=parseFloat(this.value);$("pv").textContent=S.pause;save()};
+
+/* Audio */
+var ctx=null,running=false,timer=null,next=0;
+function tone(t,f,len){
+  var o=ctx.createOscillator(),g=ctx.createGain();
+  o.type="sine";o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.5,t+0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+len);
+  o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+len+0.05);
+}
+function cue(t,label){setTimeout(function(){if(running){$("flash").textContent=label}},Math.max(0,(t-ctx.currentTime)*1000))}
+function sched(){
+  while(next<ctx.currentTime+0.3){
+    var p=S[S.mode],b=toMs(p.b)/1000,d=toMs(p.d)/1000;
+    tone(next,660,0.12);cue(next,"Départ");
+    tone(next+b,880,0.12);cue(next+b,"Sommet");
+    tone(next+b+d,1320,0.25);cue(next+b+d,"Impact");
+    next+=b+d+S.pause;
+  }
+}
+$("go").onclick=function(){
+  if(running){running=false;clearInterval(timer);$("go").textContent="▶ Démarrer";$("flash").innerHTML="&nbsp;";return}
+  var AC=window.AudioContext||window.webkitAudioContext;
+  if(!ctx)ctx=new AC();
+  ctx.resume();
+  running=true;next=ctx.currentTime+0.4;
+  timer=setInterval(sched,100);sched();
+  $("go").textContent="■ Arrêter";
+};
+
+var vid=$('vid'),st=$('strip'),sx=st.getContext('2d'),F=[],n=0,pos=0,cur=-1,M=[null,null,null],sel=null,busy=false,seeking=false,pend=null,tw=36,th=64,cw=36,dragging=false,lastX=0,fpsv=60;
+var lastQ=null,lastAu=null;
+var BIG=[],AW=108,AH=192;
+var PARAMS={grand:{hip:true,off:0,pre:0.35,bw:0.6,fb:0.5,amp:0.05,ratio:8,ratioT:3},putt:{hip:false,off:0,pre:0.3,bw:0.5,fb:0.4,amp:0.008,ratio:5,ratioT:2}};
+var COL=['#2f9e5a','#e08a1e','#d6453d'],NAMES=['Départ','Sommet','Impact'];
+function vfps(){return parseFloat($('fps').value)||30}
+function vslow(){return parseFloat($('slow').value)||1}
+function T(i){return (i+0.5)/fpsv}
+function fitStrip(){st.width=st.clientWidth||320;st.height=76;draw()}
+window.addEventListener('resize',fitStrip);
+function draw(){
+  var w=st.width,h=st.height,c=w/2,i,k;
+  sx.clearRect(0,0,w,h);
+  if(!n)return;
+  var f0=Math.floor(pos-c/cw)-1,f1=Math.ceil(pos+c/cw)+1;
+  for(i=f0;i<=f1;i++){
+    if(i<0||i>=n||!F[i])continue;
+    var x=c+(i-pos)*cw-cw/2;
+    sx.drawImage(F[i],(tw-cw)/2,0,cw,th,x,10,cw,th);
+    sx.fillStyle='rgba(0,0,0,.35)';sx.fillRect(x,10,1,th);
+    for(k=0;k<3;k++)if(M[k]===i){sx.fillStyle=COL[k];sx.fillRect(x,0,cw,7);sx.strokeStyle=COL[k];sx.lineWidth=3;sx.strokeRect(x+1.5,11.5,cw-3,th-3)}
+  }
+  sx.fillStyle='rgba(0,0,0,.7)';sx.fillRect(c-2,0,4,h);sx.fillStyle='#fff';sx.fillRect(c-1,0,2,h);
+}
+function updateUI(){
+  NAMES.forEach(function(x,i){var b=$('k'+(i+1));b.classList.toggle('on',sel===i);b.textContent=x+(M[i]===null?' —':' · image '+M[i])});
+  $('vbadge').textContent=n?'Image '+cur+' / '+(n-1)+' · '+(cur/fpsv).toFixed(3)+' s':'';
+  [0,1,2].forEach(function(i){var d=$('o'+(i+1));d.style.display=(M[i]===null||n<2)?'none':'block';d.style.left=(n>1&&M[i]!==null?100*M[i]/(n-1):0)+'%'});
+  $('ph').style.left=(n>1?100*pos/(n-1):0)+'%';
+  vcompute();
+}
+function seekPreview(){if(seeking){pend=cur;return}seeking=true;vid.currentTime=T(cur)}
+vid.onseeked=function(){seeking=false;if(!busy&&pend!==null){var q=pend;pend=null;if(q!==Math.floor(vid.currentTime*fpsv)){seeking=true;vid.currentTime=T(q)}}};
+function setPos(p){
+  pos=Math.max(0,Math.min(n-1,p));var f=Math.round(pos);
+  if(f!==cur){cur=f;if(!busy)seekPreview();if(sel!==null)M[sel]=cur}
+  draw();updateUI();
+}
+st.onpointerdown=function(e){if(!n||busy)return;dragging=true;lastX=e.clientX;st.setPointerCapture(e.pointerId)};
+st.onpointermove=function(e){if(!dragging)return;var dx=e.clientX-lastX;lastX=e.clientX;setPos(pos-dx/cw)};
+st.onpointerup=st.onpointercancel=function(){if(!dragging)return;dragging=false;setPos(Math.round(pos))};
+$('ov').onclick=function(e){if(!n||busy)return;var r=this.getBoundingClientRect();setPos((e.clientX-r.left)/r.width*(n-1))};
+[['m5',-5],['m1',-1],['p1',1],['p5',5]].forEach(function(a){$(a[0]).onclick=function(){if(n&&!busy)setPos(Math.round(pos)+a[1])}});
+[0,1,2].forEach(function(i){$('k'+(i+1)).onclick=function(){
+  if(!n||busy)return;
+  if(sel===i){sel=null;updateUI();return}
+  if(M[i]===null)M[i]=Math.round(pos);
+  sel=i;setPos(M[i]);
+}});
+function suggestInto(res,sug,b,d){
+  var r=PARAMS[S.mode].ratioT,bb=d*r,rt=b/d,nom=S.mode==="grand"?"grand jeu":"putting",adv;
+  res.textContent='Ton rythme : montée '+fmt(b/1000)+' s, descente '+fmt(d/1000)+' s, ratio '+rt.toFixed(1).replace('.',',')+':1 (swing '+fmt((b+d)/1000)+' s).';
+  if(Math.abs(rt-r)<=0.15)adv='Ton rythme est déjà proche du '+r+':1, continue comme ça.';
+  else if(rt>r)adv='Ta montée est trop lente : accélère-la d’environ '+fmt((b-bb)/1000)+' s (de '+fmt(b/1000)+' s à '+fmt(bb/1000)+' s) et garde la même descente.';
+  else adv='Ta montée est trop rapide : ralentis-la d’environ '+fmt((bb-b)/1000)+' s (de '+fmt(b/1000)+' s à '+fmt(bb/1000)+' s) et garde la même descente.';
+  sug.innerHTML='<div class="info">'+adv+'</div><p class="small">Cible '+nom+' '+r+':1 : montée '+fmt(bb/1000)+' s, descente '+fmt(d/1000)+' s</p><button class="btn2" id="apply">Régler le métronome sur ce tempo</button>';
+  $('apply').onclick=function(){S[S.mode]={b:fromMs(bb),d:fromMs(d)};S.sp=100;save();render();window.scrollTo(0,0)};
+}
+function vcompute(){
+  if(M.indexOf(null)>=0)return;
+  var b=(M[1]-M[0])/fpsv*1000/vslow(),d=(M[2]-M[1])/fpsv*1000/vslow();
+  if(b<=0||d<=0){$('vres').textContent='L’ordre doit être : départ, sommet, impact.';$('vsug').innerHTML='';return}
+  suggestInto($('vres'),$('vsug'),b,d);
+}
+$('slow').onchange=vcompute;
+function seekTo(t){return new Promise(function(r){var done=false,f=function(){if(!done){done=true;vid.removeEventListener('seeked',f);r()}};vid.addEventListener('seeked',f);setTimeout(f,1500);vid.currentTime=t})}
+function detectFps(){return new Promise(function(done){
+  if(!vid.requestVideoFrameCallback){$('vhint').textContent='Cadence non détectable sur ce navigateur : indique-la dans le champ.';done();return}
+  var ts=[],stop=false;
+  function fin(){
+    if(stop)return;stop=true;vid.pause();vid.playbackRate=1;
+    var m=1e9,i;
+    for(i=1;i<ts.length;i++){var d=ts[i]-ts[i-1];if(d>0.0005&&d<m)m=d}
+    if(m<1e9){
+      var sum=0,cnt=0,d2;for(i=1;i<ts.length;i++){d2=ts[i]-ts[i-1];if(d2>0.0005&&d2<1.5*m){sum+=d2;cnt++}}if(cnt)m=sum/cnt;
+      var f=1/m,best=Math.round(f*100)/100;
+      [24,25,30,50,60,100,120,240].forEach(function(v){if(Math.abs(v-f)/v<0.04)best=v});
+      $('fps').value=best;
+      $('vhint').textContent='Cadence détectée : '+best+' images/s.';
+    }else{$('vhint').textContent='Cadence non détectée : indique-la dans le champ.'}
+    vid.currentTime=0;done();
+  }
+  function cb(now,meta){ts.push(meta.mediaTime);if(ts.length<40)vid.requestVideoFrameCallback(cb);else fin()}
+  vid.requestVideoFrameCallback(cb);
+  vid.playbackRate=0.25;
+  var p=vid.play();if(p&&p.catch)p.catch(function(){fin()});
+  setTimeout(fin,3000);
+})}
+function hipTop(ip){
+  if(BIG.length<n)return null;
+  var w=AW,h=AH,lo=Math.max(1,ip-Math.round(1.0*fpsv)),hi=Math.min(n-1,ip+Math.round(0.25*fpsv)),i,x,y,d;
+  var re=new Float32Array(h),A,B,sm;
+  for(i=lo;i<=hi;i++){A=BIG[i];B=BIG[i-1];for(y=0;y<h;y++){sm=0;for(x=0;x<w;x++)sm+=Math.abs(A[y*w+x]-B[y*w+x]);re[y]+=sm}}
+  var mx=0;for(y=0;y<h;y++)if(re[y]>mx)mx=re[y];
+  var y0=0,y1=h-1;while(y0<h&&re[y0]<0.25*mx)y0++;while(y1>0&&re[y1]<0.25*mx)y1--;
+  if(y1-y0<20)return null;
+  var by0=Math.round(y0+0.5*(y1-y0)),by1=Math.round(y0+0.7*(y1-y0)),prof={};
+  for(i=lo-1;i<=hi;i++){var pr=new Float32Array(w);for(y=by0;y<=by1;y++)for(x=0;x<w;x++)pr[x]+=BIG[i][y*w+x];for(x=0;x<w;x++)pr[x]/=(by1-by0+1);prof[i]=pr}
+  var D={},maxd=Math.max(2,Math.round(w/27));D[lo-1]=0;
+  for(i=lo;i<=hi;i++){
+    var costs=[],c,k;
+    for(d=-maxd;d<=maxd;d++){
+      c=0;var cnt=0;
+      for(x=Math.max(0,d);x<Math.min(w,w+d);x++){c+=Math.abs(prof[i][x]-prof[i-1][x-d]);cnt++}
+      costs.push(c/cnt);
+    }
+    k=0;for(c=1;c<costs.length;c++)if(costs[c]<costs[k])k=c;
+    var sh=k-maxd;
+    if(k>0&&k<costs.length-1){var den=costs[k-1]-2*costs[k]+costs[k+1];if(den>1e-9)sh+=0.5*(costs[k-1]-costs[k+1])/den}
+    D[i]=D[i-1]+sh;
+  }
+  var seg=[];for(i=ip-Math.round(0.71*fpsv);i<=ip-Math.round(0.27*fpsv);i++)if(D[i]!==undefined)seg.push(D[i]);
+  if(!seg.length)return null;
+  seg.sort(function(a,b){return a-b});
+  var m=seg.length%2?seg[(seg.length-1)/2]:(seg[seg.length/2-1]+seg[seg.length/2])/2,endv=D[Math.min(hi,ip+Math.round(0.14*fpsv))];
+  if(Math.abs(endv-m)<0.8*(w/108))return null;
+  var sgn=endv>m?1:-1,L=m+0.1*(endv-m),t=ip;
+  while(t>ip-Math.round(0.8*fpsv)&&sgn*(D[t]-L)>0)t--;
+  return t+2;
+}
+function detect(){
+  if(!lastQ)return;
+  var q=lastQ,P=PARAMS[S.mode],au=(lastAu&&lastAu.amp>P.amp&&lastAu.ratio>P.ratio)?lastAu.t:null;
+  var ip=au===null?Math.max(0,q.indexOf(Math.max.apply(null,q))-Math.round(0.05*fpsv)):Math.min(n-1,Math.round((au+P.off)*fpsv));
+  var lo=Math.max(0,ip-Math.round(P.pre*fpsv)),hi=Math.min(n-1,ip+Math.round(0.15*fpsv)),pk=lo,k;
+  for(k=lo;k<=hi;k++)if(q[k]>q[pk])pk=k;
+  var it=pk;
+  while(it>0&&q[it]>=0.25*q[pk])it--;
+  it=Math.max(0,it-1);
+  var ith=P.hip?hipTop(ip):null,viaHip=false;
+  if(ith!==null&&ith<ip-Math.round(0.1*fpsv)&&ith>ip-Math.round(0.9*fpsv)){it=ith;viaHip=true}
+  var bl=Math.max(0,it-Math.round(P.bw*fpsv)),bh=Math.max(bl+1,it-Math.round(0.2*fpsv)),sw=q.slice(bl,bh+1).sort(function(x,y){return x-y}),med=sw.length%2?sw[(sw.length-1)/2]:(sw[sw.length/2-1]+sw[sw.length/2])/2;
+  var fl=q.slice().sort(function(x,y){return x-y})[Math.floor(0.15*q.length)],thr=fl+0.1*(med-fl),is=it-Math.round(0.2*fpsv),j,ok;
+  while(is>3){ok=true;for(j=0;j<3;j++)if(q[is-j]>=thr){ok=false;break}if(ok)break;is--}
+  if(is<=3||is>=it)is=Math.max(0,it-Math.round(P.fb*fpsv));else is=is+1;
+  M=[is,it,ip];cur=-1;sel=0;setPos(M[0]);
+  $('vhint').textContent='Détection terminée'+(au===null?' (son non exploitable : impact estimé d’après le mouvement, moins précis)':' (impact repéré grâce au bruit de la balle, à '+au.toFixed(2)+' s)')+(viaHip?', sommet repéré au départ des hanches':'')+'. Vérifie chaque repère : fais glisser la bande d’images pour trouver la bonne image.';
+}
+async function analyze(){
+  if(busy||!vid.duration)return;
+  busy=true;sel=null;M=[null,null,null];F=[];fpsv=vfps();vid.pause();
+  try{
+    n=Math.min(Math.floor(vid.duration*fpsv),900);
+    th=64;tw=Math.max(24,Math.round(th*vid.videoWidth/vid.videoHeight));cw=Math.min(tw,44);
+    var LUM=[],RI=[],j,drops=0,steps=0,cw0=vid.videoWidth,ch0=vid.videoHeight,chain=[],k0;
+    while(Math.min(cw0,ch0)/2>=120){cw0=Math.round(cw0/2);ch0=Math.round(ch0/2);steps++;var cc=document.createElement('canvas');cc.width=cw0;cc.height=ch0;chain.push(cc.getContext('2d',{willReadFrequently:true}))}
+    AW=cw0;AH=ch0;BIG=[];
+    function grab(){
+      var src=vid;
+      for(k0=0;k0<chain.length;k0++){chain[k0].drawImage(src,0,0,chain[k0].canvas.width,chain[k0].canvas.height);src=chain[k0].canvas}
+      var t=document.createElement('canvas');t.width=tw;t.height=th;
+      var tc=t.getContext('2d',{willReadFrequently:true});tc.drawImage(src,0,0,tw,th);
+      var im=tc.getImageData(0,0,tw,th).data,l=new Float32Array(tw*th),k;
+      for(k=0;k<l.length;k++)l[k]=0.3*im[k*4]+0.59*im[k*4+1]+0.11*im[k*4+2];
+      var bd=chain.length?chain[chain.length-1].getImageData(0,0,AW,AH).data:tc.getImageData(0,0,tw,th).data,bl8=new Uint8Array(AW*AH);
+      for(k=0;k<bl8.length;k++)bl8[k]=0.3*bd[k*4]+0.59*bd[k*4+1]+0.11*bd[k*4+2];
+      return {t:t,l:l,b:bl8};
+    }
+    function store(g){F.push(g.t);LUM.push(g.l);BIG.push(g.b);RI.push(F.length-1)}
+    function repeatLast(){F.push(F[F.length-1]);BIG.push(BIG[BIG.length-1])}
+    var t00=performance.now(),i;
+    for(i=0;i<n;i++){
+      await seekTo(T(i));
+      store(grab());
+      if(i%5===0){var el=(performance.now()-t00)/1000;$('vres').textContent='Analyse… '+Math.round(100*i/n)+' % (image '+i+' / '+n+', '+Math.round(el)+' s)'}
+    }
+    var e=[],sa,r,k;
+    for(k=0;k<n;k++)e.push(0);
+    for(r=1;r<RI.length;r++){
+      sa=0;for(j=0;j<LUM[r].length;j++)sa+=Math.abs(LUM[r][j]-LUM[r-1][j]);sa/=LUM[r].length;
+      for(k=RI[r-1]+1;k<=RI[r];k++)e[k]=sa/(RI[r]-RI[r-1]);
+    }
+    var q=e.map(function(v,i){return((e[i-1]===undefined?v:e[i-1])+v+(e[i+1]===undefined?v:e[i+1]))/3});
+    lastQ=q;lastAu=await audioImpact(curFile);
+    busy=false;fitStrip();detect();
+  }catch(err){busy=false;$('vres').textContent='Erreur pendant l’analyse de la vidéo.'}
+}
+var curFile=null;
+async function audioImpact(file){
+  try{
+    var ac=new (window.AudioContext||window.webkitAudioContext)();
+    var buf=await file.arrayBuffer();var ab=await new Promise(function(res,rej){var pm=ac.decodeAudioData(buf,res,rej);if(pm&&pm.catch)pm.catch(rej)});
+    var ch=ab.getChannelData(0),w=Math.round(ab.sampleRate/100),env=[],i,j,m;
+    for(i=0;i+w<=ch.length;i+=w){m=0;for(j=i;j<i+w;j++){var v=Math.abs(ch[j]);if(v>m)m=v}env.push(m)}
+    var sorted=env.slice().sort(function(x,y){return x-y}),med=sorted[Math.floor(sorted.length/2)],pk=env.indexOf(Math.max.apply(null,env));
+    ac.close();
+    return {t:pk/100,amp:env[pk],ratio:env[pk]/Math.max(med,0.0005)};
+  }catch(err){}
+  return null;
+}
+$('vf').onchange=function(){var f=this.files[0];if(!f)return;curFile=f;lastQ=null;lastAu=null;busy=false;n=0;F=[];M=[null,null,null];sel=null;cur=-1;draw();updateUI();$('vres').textContent='Chargement…';vid.src=URL.createObjectURL(f)};
+vid.onloadedmetadata=function(){detectFps().then(analyze)};
+vid.onerror=function(){$('vres').textContent='Impossible de lire cette vidéo ici.'};
+$('fps').onchange=function(){if(vid.src&&vid.duration)analyze()};
+fitStrip();updateUI();
+
+render();
+</script>
+</body>
+</html>
