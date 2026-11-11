@@ -105,10 +105,11 @@ class AppState extends ChangeNotifier {
       }
     } catch (_) {}
     await metronome.init();
-    watch
-      ..onState = _fromWatch
-      ..onReachable = () => _pushWatch(now: true)
-      ..init();
+    watch.onState = _fromWatch;
+    watch.onReachable = () {
+      _pushWatch(now: true);
+    };
+    watch.init();
     await purchase.init();
     purchase.addListener(notifyListeners);
   }
