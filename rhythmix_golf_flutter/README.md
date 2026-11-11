@@ -62,7 +62,6 @@ native/
   android/RhythmixNativePlugin.kt   décodage Android
   ios/RhythmixNativePlugin.swift    décodage iOS
 tool/bootstrap.sh      prépare le projet (dossiers android/ios + plugin natif)
-.github/workflows/build.yml  compilation automatique APK + iOS
 ```
 
 Le code natif est dans un **plugin local** (`packages/rhythmix_native`), généré par `tool/bootstrap.sh`, qui y copie les fichiers de `native/`. Le plugin s'enregistre tout seul : il n'y a pas de code à modifier dans `AppDelegate` ni dans `MainActivity`.
@@ -107,3 +106,5 @@ Apple impose une signature :
 - Icône et écran de démarrage (`flutter_launcher_icons`, `flutter_native_splash`).
 - Achat intégré unique (3–5 €) après quelques analyses gratuites, et codes promo pour les enseignants (`in_app_purchase`).
 - Mode voiture : musique calée sur le tempo.
+
+> La compilation automatique (APK + iOS) est définie à la racine du dépôt : `.github/workflows/build.yml`. GitHub ne lit les workflows qu'à cet endroit.
