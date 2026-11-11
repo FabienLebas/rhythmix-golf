@@ -37,7 +37,6 @@ Les réglages sont mémorisés dans le navigateur (`localStorage`).
 ### 2. L'analyse vidéo
 
 1. Filme ton swing **de face** (caméra face à toi, club visible), en gardant le téléphone fixe.
-0. **Gratuité** : les 3 premières analyses vidéo sont gratuites (compteur dans `localStorage`, `FREE_MAX` dans `index.html`). Ensuite, le site invite à prendre l'app mobile (achat unique, « pour le prix d'un seau de balles »). Le métronome reste gratuit. Pas de paiement sur le web.
 2. Charge la vidéo dans la carte « Analyser ». La cadence (images par seconde) est lue automatiquement dans le fichier.
 3. L'application analyse la vidéo image par image et place trois repères :
    - **Départ** : le club commence à bouger sur la montée ;
@@ -69,6 +68,8 @@ Chaque vidéo analysée ajoute un point à l'**historique** du mode en cours (un
 - la liste des dernières analyses, avec leur verdict.
 
 Si tu corriges les repères à la main, le point de cette vidéo est mis à jour (il n'est pas ajouté en double). Les données restent **sur l'appareil** (`localStorage`, aucune base de données ni serveur) ; 200 points au maximum par mode. Un bouton permet d'effacer l'historique du mode.
+
+**Gratuité** : les 3 premières analyses vidéo sont gratuites (compteur dans `localStorage`, `FREE_MAX` dans `index.html`). Ensuite, le site invite à prendre l'app mobile (achat unique, « pour le prix d'un seau de balles »). Le métronome reste gratuit. Pas de paiement sur le web.
 
 ---
 
