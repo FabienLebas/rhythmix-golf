@@ -45,7 +45,20 @@ class HomePage extends StatelessWidget {
     final video = VideoCard(state: state);
     final hist = HistoryCard(state: state);
     return Scaffold(
-      appBar: AppBar(title: const Text('⛳ Rhythmix Golf')),
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              child: Image.asset('assets/logo_mark.png', height: 32),
+            ),
+            const SizedBox(width: 10),
+            const Text('Rhythmix Golf'),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, c) {

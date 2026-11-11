@@ -20,5 +20,32 @@ dependencies:
   rhythmix_native:
     path: packages/rhythmix_native
 
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
+
+# Icônes d'app (App Store / Play Store), générées par tool/bootstrap.sh
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon.png
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icon_foreground.png
+
+# Écran de démarrage (logo complet sur fond blanc), généré par tool/bootstrap.sh
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/logo_full.png
+  color_dark: "#FFFFFF"
+  image_dark: assets/logo_full.png
+  android_12:
+    # Android 12+ : logo dans un cercle, on y met le logo sans texte
+    color: "#FFFFFF"
+    image: assets/icon_foreground.png
+
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo_mark.png
+    - assets/logo_full.png

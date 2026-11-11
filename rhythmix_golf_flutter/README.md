@@ -67,11 +67,15 @@ lib/
   detection.dart       algorithmes de détection (Dart pur)
   native.dart          appels au code natif
   widgets.dart         petits composants
+assets/
+  icon.png             icône de l'app 1024×1024 (App Store / Play Store)
+  icon_foreground.png  premier plan de l'icône adaptative Android
+  logo_mark.png        logo sans texte, fond transparent (barre d'en-tête)
+  logo_full.png        logo complet avec « Rhythmix Golf » (écran de démarrage)
 native/
   android/RhythmixNativePlugin.kt   décodage Android
   ios/RhythmixNativePlugin.swift    décodage iOS
 tool/bootstrap.sh      prépare le projet (dossiers android/ios + plugin natif)
-.github/workflows/build.yml  compilation automatique APK + iOS
 ```
 
 Le code natif est dans un **plugin local** (`packages/rhythmix_native`), généré par `tool/bootstrap.sh`, qui y copie les fichiers de `native/`. Le plugin s'enregistre tout seul : il n'y a pas de code à modifier dans `AppDelegate` ni dans `MainActivity`.
@@ -116,3 +120,5 @@ Apple impose une signature :
 - Icône et écran de démarrage (`flutter_launcher_icons`, `flutter_native_splash`).
 - Codes promo pour les enseignants (codes d'offre App Store / Google Play).
 - Mode voiture : musique calée sur le tempo.
+
+> La compilation automatique (APK + iOS) est définie à la racine du dépôt : `.github/workflows/build.yml`. GitHub ne lit les workflows qu'à cet endroit.
