@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,42 @@ const Map<String, List<double>> kDefaults = {
   'putt': [0.60, 0.30],
 };
 
+/// Un point de l'historique : un tempo mesuré sur une vidéo.
+class HistoryEntry {
+  HistoryEntry({required this.id, required this.time, required this.b, required this.d});
+  final String id;
+  final DateTime time;
+  double b; // montée (s)
+  double d; // descente (s)
+  double get ratio => b / d;
+
+  Map<String, dynamic> toJson() => {'id': id, 't': time.millisecondsSinceEpoch, 'b': b, 'd': d};
+
+  static HistoryEntry? fromJson(Object? o) {
+    if (o is! Map) return null;
+    final id = o['id'], t = o['t'], b = o['b'], d = o['d'];
+    if (id is! String || t is! num || b is! num || d is! num || b <= 0 || d <= 0) return null;
+    return HistoryEntry(id: id, time: DateTime.fromMillisecondsSinceEpoch(t.toInt()), b: b.toDouble(), d: d.toDouble());
+  }
+}
+
+/// Écart toléré autour du ratio cible pour parler de « dans la cible ».
+const double kRatioTolerance = 0.15;
+const int kHistoryMax = 200;
+
+enum TempoStatus { ok, slow, fast }
+
+TempoStatus tempoStatus(double ratio, int target) {
+  if ((ratio - target).abs() <= kRatioTolerance) return TempoStatus.ok;
+  return ratio > target ? TempoStatus.slow : TempoStatus.fast;
+}
+
+String tempoStatusLabel(TempoStatus s) => switch (s) {
+      TempoStatus.ok => 'Dans la cible',
+      TempoStatus.slow => 'Trop lent',
+      TempoStatus.fast => 'Trop rapide',
+    };
+
 class AppState extends ChangeNotifier {
   String mode = 'grand';
   final Map<String, Tempo> tempo = {
@@ -27,6 +64,9 @@ class AppState extends ChangeNotifier {
   bool lock = true;
   double speed = 100;
   final Metronome metronome = Metronome();
+
+  /// Historique du tempo, stocké sur l'appareil (pas de base de données).
+  final Map<String, List<HistoryEntry>> history = {'grand': [], 'putt': []};
 
   SharedPreferences? _prefs;
   Timer? _restart;
@@ -47,6 +87,14 @@ class AppState extends ChangeNotifier {
       }
       pause = p.getDouble('pause') ?? pause;
       lock = p.getBool('lock') ?? lock;
+      for (final k in ['grand', 'putt']) {
+        final raw = p.getString('history_$k');
+        if (raw == null) continue;
+        final l = jsonDecode(raw);
+        if (l is List) {
+          history[k] = l.map(HistoryEntry.fromJson).whereType<HistoryEntry>().toList();
+        }
+      }
     } catch (_) {}
     await metronome.init();
   }
@@ -61,6 +109,35 @@ class AppState extends ChangeNotifier {
     }
     p.setDouble('pause', pause);
     p.setBool('lock', lock);
+  }
+
+  void _saveHistory(String m) {
+    _prefs?.setString('history_$m', jsonEncode([for (final e in history[m]!) e.toJson()]));
+  }
+
+  /// Ajoute (ou met à jour, si les repères sont retouchés) le point d'une vidéo.
+  void recordTempo(String videoId, double b, double d) {
+    if (!(b > 0 && d > 0)) return;
+    final id = '$videoId-$mode';
+    final l = history[mode]!;
+    final i = l.indexWhere((e) => e.id == id);
+    if (i >= 0) {
+      final e = l[i];
+      if ((e.b - b).abs() < 1e-4 && (e.d - d).abs() < 1e-4) return;
+      e.b = b;
+      e.d = d;
+    } else {
+      l.add(HistoryEntry(id: id, time: DateTime.now(), b: b, d: d));
+      if (l.length > kHistoryMax) l.removeRange(0, l.length - kHistoryMax);
+    }
+    _saveHistory(mode);
+    notifyListeners();
+  }
+
+  void clearHistory() {
+    history[mode]!.clear();
+    _saveHistory(mode);
+    notifyListeners();
   }
 
   void _changed({bool restart = true}) {

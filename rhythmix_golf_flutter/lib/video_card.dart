@@ -46,6 +46,7 @@ class _VideoCardState extends State<VideoCard> {
   bool _pvLoading = false;
   late String _lastMode;
   int _job = 0;
+  String _videoId = '';
 
   AppState get s => widget.state;
 
@@ -91,6 +92,7 @@ class _VideoCardState extends State<VideoCard> {
     if (x == null || !mounted) return;
     final path = x.path;
     final job = ++_job;
+    _videoId = DateTime.now().millisecondsSinceEpoch.toString();
     final old = List<ui.Image>.from(_thumbs);
     setState(() {
       _path = path;
@@ -291,6 +293,7 @@ class _VideoCardState extends State<VideoCard> {
     final (b, d) = md;
     if (b <= 0 || d <= 0) return;
     s.applyTarget(d * s.ratioTarget, d);
+    if (_videoId.isNotEmpty) s.recordTempo(_videoId, b, d);
   }
 
   // ---------- Interface ----------

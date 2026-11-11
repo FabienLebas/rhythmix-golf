@@ -59,6 +59,16 @@ Si un repère est mal placé, ajuste-le sur la bande d'images :
 
 Le tempo et le métronome se recalculent à chaque correction.
 
+### 3. L'historique du tempo
+
+Chaque vidéo analysée ajoute un point à l'**historique** du mode en cours (un historique pour le grand jeu, un autre pour le putting). La carte « Historique », en bas de page, affiche :
+
+- un **graphique** du ratio montée : descente au fil des analyses (par exemple une vidéo à 3,5 : 1 donne un point à 3,5) ;
+- la **cible** (3 au grand jeu, 2 au putting) et trois zones : au-dessus de la cible → **« Trop lent »**, autour de la cible (± 0,15) → **« Dans la cible »**, en dessous → **« Trop rapide »** ;
+- la liste des dernières analyses, avec leur verdict.
+
+Si tu corriges les repères à la main, le point de cette vidéo est mis à jour (il n'est pas ajouté en double). Les données restent **sur l'appareil** (`localStorage`, aucune base de données ni serveur) ; 200 points au maximum par mode. Un bouton permet d'effacer l'historique du mode.
+
 ---
 
 ## Comment fonctionne la détection
