@@ -1,0 +1,21 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.DS_Store
+
+# Générés par tool/bootstrap.sh (recréés à chaque compilation CI)
+packages/rhythmix_native/
+android/
+ios/
+
+# Artefacts
+*.ipa
+*.apk
+Payload/

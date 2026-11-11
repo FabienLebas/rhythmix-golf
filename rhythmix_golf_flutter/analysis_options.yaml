@@ -1,0 +1,4 @@
+# Analyse statique minimale (pas de dépendance à flutter_lints).
+analyzer:
+  exclude:
+    - packages/rhythmix_native/example/**
