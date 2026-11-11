@@ -50,6 +50,7 @@ input[type=range]{width:100%}
   .card{padding:20px;margin-bottom:0}
   #vid{max-height:62vh}
   .desk{display:block}
+  .hist{grid-column:1/-1;margin-top:24px}
 }
 </style>
 </head>
@@ -498,7 +499,7 @@ function freeLeft(){return Math.max(0,FREE_MAX-freeUsed)}
 function freeRender(){
   var l=freeLeft(),el=$('free');
   el.innerHTML=l===FREE_MAX?'🎁 Les '+FREE_MAX+' premières analyses vidéo sont gratuites. Ensuite, retrouve Rhythmix Golf dans l’<b>app mobile</b>, pour le prix d’un seau de balles : 2,99&nbsp;€ en prix de lancement, puis 4,99&nbsp;€, en un seul paiement.'
-    :l>0?'🎁 Analyses gratuites : il t’en reste '+l+' sur '+FREE_MAX+'. Ensuite, l’<b>app mobile</b> pour le prix d’un seau de balles : 2,99&nbsp;€ en prix de lancement, puis 4,99&nbsp;€.'
+    :l>0?'🎁 Analyses gratuites : il t’en reste '+l+' sur '+FREE_MAX+'. Ensuite, télécharge l’<b>app mobile</b> pour le prix d’un seau de balles : 2,99&nbsp;€ en prix de lancement, puis 4,99&nbsp;€.'
     :'🔒 Tes '+FREE_MAX+' analyses gratuites sont utilisées. Pour continuer, prends l’<b>app mobile</b> Rhythmix Golf, pour le prix d’un seau de balles : 2,99&nbsp;€ en prix de lancement, puis 4,99&nbsp;€, en un seul paiement. Le métronome reste gratuit ici.';
 }
 function freeUse(){freeUsed++;try{localStorage.setItem(FKEY,String(freeUsed))}catch(e){}freeRender()}
