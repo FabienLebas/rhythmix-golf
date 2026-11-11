@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'app_state.dart';
 import 'detection.dart';
 import 'native.dart';
+import 'paywall.dart';
 import 'strip.dart';
 import 'widgets.dart';
 
@@ -82,6 +83,11 @@ class _VideoCardState extends State<VideoCard> {
 
   Future<void> _pick(ImageSource source) async {
     if (_busy) return;
+    // Gratuité épuisée : proposer l'achat avant même d'ouvrir la caméra ou la galerie.
+    if (!s.purchase.canAnalyze) {
+      await showPaywall(context, s.purchase);
+      if (!s.purchase.canAnalyze || !mounted) return;
+    }
     XFile? x;
     try {
       x = await ImagePicker().pickVideo(source: source, maxDuration: const Duration(seconds: 20));
@@ -186,6 +192,9 @@ class _VideoCardState extends State<VideoCard> {
         _busy = false;
         _status = '—';
       });
+      // Une analyse réussie compte (une seule fois par vidéo : retoucher les repères
+      // ou changer de mode ne consomme rien).
+      s.purchase.recordAnalysis();
       _detect();
     } catch (e) {
       if (!mounted || job != _job) return;
@@ -354,6 +363,7 @@ class _VideoCardState extends State<VideoCard> {
               style: muted,
             ),
             const SizedBox(height: 10),
+            FreeTrialBanner(purchase: s.purchase),
             Row(
               children: [
                 Expanded(
