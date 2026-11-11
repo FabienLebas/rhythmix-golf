@@ -33,7 +33,9 @@ iPhone  ◀── nouveau tempo (molette) et marche/arrêt ───────
 3. Supprimer les fichiers générés (`…App.swift`, `ContentView.swift`) et ajouter à la cible les trois `.swift` de ce dossier.
 4. Version minimale : **watchOS 10** (la molette et `onChange` à deux paramètres en dépendent).
 5. *Signing & Capabilities* de la cible montre : choisir ton équipe. Ajouter **Background Modes** et cocher **Physical Therapy** (clé `WKBackgroundModes`), pour que les vibrations continuent poignet baissé.
-6. Brancher l'iPhone, appairé à la montre, choisir le schéma de la cible montre et lancer. Ouvrir l'app sur la montre une première fois.
+6. Cible **Runner** ▸ *Build Phases* : faire glisser **Embed Watch Content** juste sous *Copy Bundle Resources*, au-dessus de *[CP] Embed Pods Frameworks* et *Thin Binary*. Sinon : erreur « Cycle inside Runner ».
+7. Identifiants pour un compte gratuit : Runner `com.fabienlebas.rhythmixGolf`, montre `com.fabienlebas.rhythmixGolf.watchkitapp`, et dans les *Build Settings* de la montre, `WKCompanionAppBundleIdentifier` = identifiant de Runner.
+8. Brancher l'iPhone, appairé à la montre, choisir le schéma de la cible montre et lancer. Ouvrir l'app sur la montre une première fois.
 
 ## À vérifier à l'essai
 
