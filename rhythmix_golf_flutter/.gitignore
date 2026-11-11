@@ -11,9 +11,9 @@ build/
 .DS_Store
 
 # Générés par tool/bootstrap.sh (recréés à chaque compilation CI)
-packages/rhythmix_native/
-android/
-ios/
+/packages/rhythmix_native/
+/android/
+/ios/
 
 # Artefacts
 *.ipa
