@@ -59,4 +59,6 @@ PY
 flutter pub get
 # 4. Icônes de l'application (assets/icon.png) pour Android et iOS
 dart run flutter_launcher_icons
+# 5. Écran de démarrage (assets/logo_full.png)
+dart run flutter_native_splash:create
 echo "Projet prêt. Android : flutter build apk --release · iOS (Mac) : flutter run --release"

@@ -57,7 +57,7 @@ assets/
   icon.png             icône de l'app 1024×1024 (App Store / Play Store)
   icon_foreground.png  premier plan de l'icône adaptative Android
   logo_mark.png        logo sans texte, fond transparent (barre d'en-tête)
-  logo_full.png        logo complet avec « Rhythmix Golf », fond transparent
+  logo_full.png        logo complet avec « Rhythmix Golf » (écran de démarrage)
 native/
   android/RhythmixNativePlugin.kt   décodage Android
   ios/RhythmixNativePlugin.swift    décodage iOS
