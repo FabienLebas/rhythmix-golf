@@ -225,7 +225,7 @@ function renderHist(){
   $("ht").textContent=m==="grand"?"Historique · grand jeu":"Historique · putting";
   $("hclear").hidden=!L.length;
   if(!L.length){el.innerHTML='<p class="small" style="margin:0">Aucune analyse pour l’instant. Chaque vidéo analysée ajoute un point (ratio montée : descente) à ce graphique.</p>';return}
-  var W=320,H=190,pl=30,pr=8,pt=10,pb=24,tol=0.15,rs=L.map(function(e){return e.r});
+  var W=Math.max(320,Math.round(el.clientWidth||320)),H=W>=600?230:190,pl=30,pr=8,pt=10,pb=24,tol=0.15,rs=L.map(function(e){return e.r});
   var lo=Math.min.apply(null,rs.concat([T-0.8])),hi=Math.max.apply(null,rs.concat([T+0.8]));
   lo=Math.floor(lo*2-0.2)/2;hi=Math.ceil(hi*2+0.2)/2;
   var Y=function(v){return pt+(hi-v)/(hi-lo)*(H-pt-pb)};
@@ -262,6 +262,7 @@ function vslow(){return parseFloat($('slow').value)||1}
 function T(i){return (i+0.5)/fpsv}
 function fitStrip(){st.width=st.clientWidth||320;st.height=76;draw()}
 window.addEventListener('resize',fitStrip);
+var _hw=0;window.addEventListener('resize',function(){var w=$("hbody").clientWidth;if(Math.abs(w-_hw)>20){_hw=w;renderHist()}});
 function draw(){
   var w=st.width,h=st.height,c=w/2,i,k;
   sx.clearRect(0,0,w,h);
