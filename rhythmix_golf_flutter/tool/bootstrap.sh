@@ -22,6 +22,7 @@ if [ -z "$KT" ] || [ -z "$SW" ]; then
 fi
 cp native/android/RhythmixNativePlugin.kt "$KT"
 cp native/ios/RhythmixNativePlugin.swift "$SW"
+cp native/ios/WatchBridge.swift "$(dirname "$SW")/WatchBridge.swift"
 echo "Plugin natif : $KT et $SW"
 
 # 2. Dossiers android/ et ios/ de l'application

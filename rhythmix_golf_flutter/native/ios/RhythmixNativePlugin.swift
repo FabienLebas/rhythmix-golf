@@ -18,6 +18,7 @@ public class RhythmixNativePlugin: NSObject, FlutterPlugin {
     let channel = FlutterMethodChannel(name: "rhythmix_native", binaryMessenger: registrar.messenger())
     let instance = RhythmixNativePlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
+    WatchBridge.register(with: registrar)  // liaison avec l'Apple Watch
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

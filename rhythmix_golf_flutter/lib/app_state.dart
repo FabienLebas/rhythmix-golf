@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'metronome.dart';
 import 'purchase.dart';
+import 'watch.dart';
 
 class Tempo {
   Tempo(this.b, this.d);
@@ -66,6 +67,9 @@ class AppState extends ChangeNotifier {
   double speed = 100;
   final Metronome metronome = Metronome();
 
+  /// Apple Watch : reçoit le tempo, renvoie la molette (iOS uniquement).
+  final WatchLink watch = WatchLink();
+
   /// Analyses gratuites et achat intégré.
   final PurchaseService purchase = PurchaseService();
 
@@ -101,6 +105,10 @@ class AppState extends ChangeNotifier {
       }
     } catch (_) {}
     await metronome.init();
+    watch
+      ..onState = _fromWatch
+      ..onReachable = () => _pushWatch(now: true)
+      ..init();
     await purchase.init();
     purchase.addListener(notifyListeners);
   }
@@ -146,9 +154,50 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _changed({bool restart = true}) {
+  Timer? _watchTimer;
+
+  /// Envoi à la montre. Court délai : le curseur de vitesse produit des
+  /// dizaines de changements par seconde, seul le dernier compte.
+  void _pushWatch({bool now = false}) {
+    _watchTimer?.cancel();
+    if (now) {
+      _sendWatch();
+    } else {
+      _watchTimer = Timer(const Duration(milliseconds: 150), _sendWatch);
+    }
+  }
+
+  void _sendWatch() {
+    watch.send(mode: mode, b: cur.b, d: cur.d, pause: pause, running: metronome.running);
+  }
+
+  /// État venu de la montre (molette, démarrer / arrêter). Pas de renvoi vers
+  /// la montre : elle a déjà cet état, et un renvoi ferait sauter sa molette.
+  void _fromWatch(Map<String, dynamic> m) {
+    if (m['mode'] != mode) return; // le mode se choisit sur l'iPhone
+    final b = (m['b'] as num?)?.toDouble(), d = (m['d'] as num?)?.toDouble();
+    if (b != null && d != null && b > 0 && d > 0 && ((cur.b - b).abs() > 1e-6 || (cur.d - d).abs() > 1e-6)) {
+      cur.b = b;
+      cur.d = d;
+      speed = 100;
+      _changed(push: false);
+    }
+    final run = m['running'];
+    if (run is bool && run != metronome.running) {
+      if (run) {
+        metronome.start(cur.b, cur.d, pause);
+      } else {
+        _restart?.cancel();
+        metronome.stop();
+      }
+      notifyListeners();
+    }
+  }
+
+  void _changed({bool restart = true, bool push = true}) {
     _save();
     notifyListeners();
+    if (push) _pushWatch();
     if (restart && metronome.running) {
       _restart?.cancel();
       _restart = Timer(const Duration(milliseconds: 300), () {
@@ -223,9 +272,11 @@ class AppState extends ChangeNotifier {
     } else {
       final f = metronome.start(cur.b, cur.d, pause);
       notifyListeners();
+      _pushWatch(now: true);
       await f;
     }
     notifyListeners();
+    _pushWatch(now: true);
   }
 }
 
