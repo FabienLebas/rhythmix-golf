@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
+import 'history_card.dart';
 import 'metronome_card.dart';
 import 'video_card.dart';
 
@@ -42,6 +43,7 @@ class HomePage extends StatelessWidget {
     final modes = _ModeSelector(state: state);
     final metro = MetronomeCard(state: state);
     final video = VideoCard(state: state);
+    final hist = HistoryCard(state: state);
     return Scaffold(
       appBar: AppBar(title: const Text('⛳ Rhythmix Golf')),
       body: SafeArea(
@@ -63,13 +65,15 @@ class HomePage extends StatelessWidget {
                         Expanded(child: video),
                       ],
                     ),
+                    const SizedBox(height: 24),
+                    SizedBox(width: 560, child: hist),
                   ],
                 ),
               );
             }
             return ListView(
               padding: const EdgeInsets.all(16),
-              children: [modes, const SizedBox(height: 12), metro, const SizedBox(height: 12), video],
+              children: [modes, const SizedBox(height: 12), metro, const SizedBox(height: 12), video, const SizedBox(height: 12), hist],
             );
           },
         ),

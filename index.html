@@ -31,6 +31,13 @@ input[type=range]{width:100%}
 :root[data-mode="putt"]{--ac:#2f6fb0;--ac2:#e6eef8}
 @media (prefers-color-scheme:dark){:root[data-mode="putt"]:not([data-theme="light"]){--ac:#6fb1ee;--ac2:#1f2d3d}}
 :root[data-mode="putt"][data-theme="dark"]{--ac:#6fb1ee;--ac2:#1f2d3d}
+.hist svg{width:100%;height:auto;display:block}
+.hist .zl{font-size:10px;fill:var(--mut)}
+.hist .ax{font-size:10px;fill:var(--mut)}
+.hist ul{list-style:none;margin:8px 0 0;padding:0;font-size:14px}
+.hist li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--bd)}
+.hist .tag{font-weight:600}
+.hist .ok{color:#2f9e5a}.hist .slow{color:#d6453d}.hist .fast{color:#e08a1e}
 .desk{display:none}
 @media (min-width:900px){
   body{font-size:17px}
@@ -95,6 +102,12 @@ input[type=range]{width:100%}
 <p class="small">Fais glisser la bande d’images comme dans un logiciel de montage. Touche Départ, Sommet ou Impact pour le sélectionner : en faisant glisser, le repère suit l’image affichée sous le trait blanc. Retouche le même bouton pour le désélectionner.</p>
 </div>
 
+<div class="card hist">
+<h2 id="ht">Historique</h2>
+<div id="hbody"></div>
+<button class="btn2" id="hclear" hidden>🗑 Effacer cet historique</button>
+</div>
+
 </main>
 
 <script>
@@ -118,7 +131,7 @@ function render(){
   var p=S[S.mode];
   fields();
   $("pause").value=S.pause;$("pv").textContent=S.pause;
-  $("lock").checked=S.lock;
+  $("lock").checked=S.lock;renderHist();
   $("speed").value=S.sp;$("sv").textContent=S.sp;
   renderInfo();
 }
@@ -186,6 +199,52 @@ $("go").onclick=function(){
   $("go").textContent="■ Arrêter";
 };
 
+/* Historique du tempo : stocké sur l'appareil (localStorage), un point par vidéo analysée et par mode */
+var HIST={grand:[],putt:[]},HKEY="tg_hist",HMAX=200,curId=null;
+try{var hx=JSON.parse(localStorage.getItem(HKEY)||"null");if(hx){["grand","putt"].forEach(function(k){if(Array.isArray(hx[k]))HIST[k]=hx[k].filter(function(e){return e&&e.r>0})})}}catch(e){}
+function hsave(){try{localStorage.setItem(HKEY,JSON.stringify(HIST))}catch(e){}}
+function hTarget(m){return PARAMS[m].ratioT}
+function hStatus(r,m){var t=hTarget(m);return Math.abs(r-t)<=0.15?"ok":(r>t?"slow":"fast")}
+var HLAB={ok:"Dans la cible",slow:"Trop lent",fast:"Trop rapide"};
+function hRecord(b,d){
+  if(!curId)return;
+  var id=curId+"-"+S.mode,L=HIST[S.mode],r=b/d,e=null,i;
+  for(i=0;i<L.length;i++)if(L[i].id===id){e=L[i];break}
+  if(e){if(Math.abs(e.b-b)<0.5&&Math.abs(e.d-d)<0.5)return;e.b=b;e.d=d;e.r=r}
+  else{L.push({id:id,t:Date.now(),b:b,d:d,r:r});if(L.length>HMAX)L.splice(0,L.length-HMAX)}
+  hsave();renderHist();
+}
+function hDate(t){var d=new Date(t);return d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}
+function renderHist(){
+  var m=S.mode,L=HIST[m],T=hTarget(m),el=$("hbody");
+  $("ht").textContent=m==="grand"?"Historique · grand jeu":"Historique · putting";
+  $("hclear").hidden=!L.length;
+  if(!L.length){el.innerHTML='<p class="small" style="margin:0">Aucune analyse pour l’instant. Chaque vidéo analysée ajoute un point (ratio montée : descente) à ce graphique.</p>';return}
+  var W=320,H=190,pl=30,pr=8,pt=10,pb=24,tol=0.15,rs=L.map(function(e){return e.r});
+  var lo=Math.min.apply(null,rs.concat([T-0.8])),hi=Math.max.apply(null,rs.concat([T+0.8]));
+  lo=Math.floor(lo*2-0.2)/2;hi=Math.ceil(hi*2+0.2)/2;
+  var Y=function(v){return pt+(hi-v)/(hi-lo)*(H-pt-pb)};
+  var X=function(i){return L.length<2?(pl+(W-pl-pr)/2):pl+i*(W-pl-pr)/(L.length-1)};
+  var g='',y1=Y(T+tol),y2=Y(T-tol);
+  g+='<rect x="'+pl+'" y="'+pt+'" width="'+(W-pl-pr)+'" height="'+(y1-pt)+'" fill="#d6453d" opacity=".10"/>';
+  g+='<rect x="'+pl+'" y="'+y1+'" width="'+(W-pl-pr)+'" height="'+(y2-y1)+'" fill="#2f9e5a" opacity=".22"/>';
+  g+='<rect x="'+pl+'" y="'+y2+'" width="'+(W-pl-pr)+'" height="'+(H-pb-y2)+'" fill="#e08a1e" opacity=".10"/>';
+  g+='<text class="zl" x="'+(pl+4)+'" y="'+(pt+11)+'">Trop lent</text>';
+  g+='<text class="zl" x="'+(pl+4)+'" y="'+(H-pb-4)+'">Trop rapide</text>';
+  for(var v=Math.ceil(lo);v<=hi;v++){g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--bd)" stroke-width="1" opacity=".6"/><text class="ax" x="'+(pl-4)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+v+'</text>'}
+  g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(T)+'" y2="'+Y(T)+'" stroke="#2f9e5a" stroke-width="1.5" stroke-dasharray="5 3"/>';
+  g+='<text class="zl" x="'+(W-pr-2)+'" y="'+(Y(T)-3)+'" text-anchor="end" style="fill:#2f9e5a">cible '+T+':1</text>';
+  if(L.length>1)g+='<polyline fill="none" stroke="var(--ac)" stroke-width="2" points="'+L.map(function(e,i){return X(i)+','+Y(e.r)}).join(' ')+'"/>';
+  var col={ok:"#2f9e5a",slow:"#d6453d",fast:"#e08a1e"};
+  L.forEach(function(e,i){g+='<circle cx="'+X(i)+'" cy="'+Y(e.r)+'" r="4.5" fill="'+col[hStatus(e.r,m)]+'" stroke="var(--card)" stroke-width="1.5"><title>'+hDate(e.t)+' : '+e.r.toFixed(1).replace(".",",")+':1</title></circle>'});
+  g+='<text class="ax" x="'+pl+'" y="'+(H-6)+'">'+hDate(L[0].t)+'</text>';
+  if(L.length>1)g+='<text class="ax" x="'+(W-pr)+'" y="'+(H-6)+'" text-anchor="end">'+hDate(L[L.length-1].t)+'</text>';
+  var h='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Évolution du ratio de tempo">'+g+'</svg><ul>';
+  L.slice(-8).reverse().forEach(function(e){var st=hStatus(e.r,m);h+='<li><span>'+hDate(e.t)+' · '+e.r.toFixed(1).replace(".",",")+':1</span><span class="tag '+st+'">'+HLAB[st]+'</span></li>'});
+  el.innerHTML=h+'</ul>';
+}
+$("hclear").onclick=function(){if(confirm("Effacer l’historique "+(S.mode==="grand"?"du grand jeu":"du putting")+" ?")){HIST[S.mode]=[];hsave();renderHist()}};
+
 var vid=$('vid'),st=$('strip'),sx=st.getContext('2d'),F=[],n=0,pos=0,cur=-1,M=[null,null,null],sel=null,busy=false,seeking=false,pend=null,tw=36,th=64,cw=36,dragging=false,lastX=0,fpsv=60;
 var lastQ=null,lastAu=null;
 var BADVID='Cette vidéo ne s’affiche pas correctement dans ce navigateur (c’est fréquent avec le format HEVC/H.265 des vidéos iPhone en 4K). Ouvre la page dans Safari, ou convertis la vidéo en H.264 (par exemple : ffmpeg -i IMG.mov -c:v libx264 -crf 20 sortie.mp4). Sur iPhone, Réglages > Appareil photo > Formats > « Le plus compatible » filme directement en H.264.';
@@ -251,6 +310,7 @@ function vcompute(){
   if(b<=0||d<=0){$('vres').textContent='L’ordre doit être : départ, sommet, impact.';$('vsug').innerHTML='';return}
   var bt=d*PARAMS[S.mode].ratioT;S[S.mode]={b:S.unit==='img'?bt*30/1000:bt,d:S.unit==='img'?d*30/1000:d};S.sp=100;$('speed').value=100;$('sv').textContent=100;fields();renderInfo();save();
   suggestInto($('vres'),$('vsug'),b,d);
+  hRecord(b,d);
 }
 function seekTo(t){return new Promise(function(r){var done=false,f=function(ev){if(!done){done=true;vid.removeEventListener('seeked',f);r(!!(ev&&ev.type==='seeked'))}};vid.addEventListener('seeked',f);setTimeout(f,1500);vid.currentTime=t})}
 function walk(dv,s,e,fn){var p=s;while(p+8<=e){var len=dv.getUint32(p),t=String.fromCharCode(dv.getUint8(p+4),dv.getUint8(p+5),dv.getUint8(p+6),dv.getUint8(p+7)),h=8;if(len===1){len=Number(dv.getBigUint64(p+8));h=16}else if(len===0)len=e-p;if(len<8)break;fn(t,p+h,p+len);p+=len}}
@@ -439,7 +499,7 @@ async function audioImpact(file){
   }catch(err){}
   return null;
 }
-$('vf').onchange=function(){var f=this.files[0];if(!f)return;curFile=f;lastQ=null;lastAu=null;busy=false;n=0;F=[];M=[null,null,null];sel=null;cur=-1;draw();updateUI();$('vmeta').hidden=true;$('vres').textContent='Chargement…';vid.src=URL.createObjectURL(f)};
+$('vf').onchange=function(){var f=this.files[0];if(!f)return;curFile=f;curId=Date.now();lastQ=null;lastAu=null;busy=false;n=0;F=[];M=[null,null,null];sel=null;cur=-1;draw();updateUI();$('vmeta').hidden=true;$('vres').textContent='Chargement…';vid.src=URL.createObjectURL(f)};
 vid.onloadedmetadata=async function(){
   var f=await mp4Fps(curFile);
   if(f&&f>5&&f<500){var fr=Math.round(f*100)/100;$('fps').value=fr;$('vhint').textContent='Cadence lue dans le fichier : '+fr+' images/s.';analyze()}

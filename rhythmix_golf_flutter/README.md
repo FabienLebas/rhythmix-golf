@@ -35,6 +35,9 @@ C'est le portage de la version web, avec les mêmes algorithmes de détection. C
 4. Tu peux corriger les repères à la main : bande d'images à faire glisser, boutons ±1 / ±5, boutons Départ / Sommet / Impact.
 5. Résultat : ton tempo, un conseil (« accélère ta montée de 0,27 s… ») et **le métronome réglé sur le tempo cible**. La descente est gardée, la montée est ajustée pour obtenir 3 : 1 ou 2 : 1.
 
+### Historique du tempo
+Chaque vidéo analysée ajoute un point (ratio montée : descente) à l'historique du mode en cours, grand jeu ou putting (`lib/history_card.dart`). Le graphique montre la cible (3 ou 2) et les zones « Trop lent » (au-dessus), « Dans la cible » (± 0,15) et « Trop rapide » (en dessous). Retoucher les repères met à jour le point de la même vidéo. Les données sont stockées sur l'appareil avec `shared_preferences` (pas de base de données), 200 points maximum par mode, avec un bouton pour effacer.
+
 ---
 
 ## Structure
