@@ -53,6 +53,11 @@ lib/
   detection.dart       algorithmes de détection (Dart pur)
   native.dart          appels au code natif
   widgets.dart         petits composants
+assets/
+  icon.png             icône de l'app 1024×1024 (App Store / Play Store)
+  icon_foreground.png  premier plan de l'icône adaptative Android
+  logo_mark.png        logo sans texte, fond transparent (barre d'en-tête)
+  logo_full.png        logo complet avec « Rhythmix Golf », fond transparent
 native/
   android/RhythmixNativePlugin.kt   décodage Android
   ios/RhythmixNativePlugin.swift    décodage iOS

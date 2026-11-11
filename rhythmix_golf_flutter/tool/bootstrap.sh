@@ -57,4 +57,6 @@ print('Info.plist et AndroidManifest.xml mis à jour')
 PY
 
 flutter pub get
+# 4. Icônes de l'application (assets/icon.png) pour Android et iOS
+dart run flutter_launcher_icons
 echo "Projet prêt. Android : flutter build apk --release · iOS (Mac) : flutter run --release"
