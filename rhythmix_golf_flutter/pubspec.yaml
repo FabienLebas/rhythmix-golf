@@ -14,6 +14,8 @@ dependencies:
   path_provider: ^2.1.4
   shared_preferences: ^2.3.0
   image_picker: ^1.1.0
+  # Achat intégré unique (déblocage après les analyses gratuites)
+  in_app_purchase: ^3.2.0
   # Plugin local (décodage vidéo natif), généré par tool/bootstrap.sh
   rhythmix_native:
     path: packages/rhythmix_native

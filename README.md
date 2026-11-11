@@ -69,6 +69,8 @@ Chaque vidéo analysée ajoute un point à l'**historique** du mode en cours (un
 
 Si tu corriges les repères à la main, le point de cette vidéo est mis à jour (il n'est pas ajouté en double). Les données restent **sur l'appareil** (`localStorage`, aucune base de données ni serveur) ; 200 points au maximum par mode. Un bouton permet d'effacer l'historique du mode.
 
+**Gratuité** : les 3 premières analyses vidéo sont gratuites (compteur dans `localStorage`, `FREE_MAX` dans `index.html`). Ensuite, le site invite à prendre l'app mobile (achat unique, « pour le prix d'un seau de balles »). Le métronome reste gratuit. Pas de paiement sur le web.
+
 ---
 
 ## Comment fonctionne la détection

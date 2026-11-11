@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'metronome.dart';
+import 'purchase.dart';
 
 class Tempo {
   Tempo(this.b, this.d);
@@ -65,6 +66,9 @@ class AppState extends ChangeNotifier {
   double speed = 100;
   final Metronome metronome = Metronome();
 
+  /// Analyses gratuites et achat intégré.
+  final PurchaseService purchase = PurchaseService();
+
   /// Historique du tempo, stocké sur l'appareil (pas de base de données).
   final Map<String, List<HistoryEntry>> history = {'grand': [], 'putt': []};
 
@@ -97,6 +101,8 @@ class AppState extends ChangeNotifier {
       }
     } catch (_) {}
     await metronome.init();
+    await purchase.init();
+    purchase.addListener(notifyListeners);
   }
 
   void _save() {

@@ -38,6 +38,18 @@ C'est le portage de la version web, avec les mêmes algorithmes de détection. C
 ### Historique du tempo
 Chaque vidéo analysée ajoute un point (ratio montée : descente) à l'historique du mode en cours, grand jeu ou putting (`lib/history_card.dart`). Le graphique montre la cible (3 ou 2) et les zones « Trop lent » (au-dessus), « Dans la cible » (± 0,15) et « Trop rapide » (en dessous). Retoucher les repères met à jour le point de la même vidéo. Les données sont stockées sur l'appareil avec `shared_preferences` (pas de base de données), 200 points maximum par mode, avec un bouton pour effacer.
 
+### Gratuité et achat intégré
+- Les **3 premières analyses vidéo sont gratuites**. Une analyse compte quand une vidéo est analysée avec succès : un échec, une retouche des repères ou un changement de mode (grand jeu ↔ putting) sur la même vidéo ne comptent pas.
+- Ensuite, un **achat unique** (pas d'abonnement) débloque les analyses à vie. Argument : « Pour le prix d'un seau de balles ». Le métronome et l'historique restent gratuits.
+- Un encadré dans la carte d'analyse explique la règle et le nombre d'analyses restantes ; une fenêtre d'achat s'ouvre quand la gratuité est épuisée, avec « Restaurer mes achats » (obligatoire pour l'App Store).
+- Code : `lib/purchase.dart` (compteur, achat, restauration, plugin officiel `in_app_purchase`) et `lib/paywall.dart` (encadré et fenêtre d'achat). Aucun serveur : le compteur est dans `shared_preferences`, donc il repart à zéro si l'app est désinstallée (l'achat, lui, se restaure via le store).
+
+**Mise en place dans les stores (à faire une fois)**
+1. Créer un produit **non consommable** d'identifiant `rhythmix_golf_unlock` (`kProductId`) dans App Store Connect (*Achats intégrés*) et dans la Google Play Console (*Produits intégrés à l'application*).
+2. Prix de lancement : **2,99 €**. Pour passer à **4,99 €** plus tard : changer le prix dans les deux stores, puis mettre `kLaunchOffer = false` dans `lib/purchase.dart` (retire la mention « prix de lancement » et le prix barré). Le prix affiché dans l'app est toujours celui renvoyé par le store.
+3. iOS : ajouter la capacité **In-App Purchase** dans Xcode (*Signing & Capabilities*). Android : l'app doit être publiée au moins en test interne pour que les achats fonctionnent (les achats sont impossibles avec l'APK installé à la main).
+4. Tester avec un compte *Sandbox* (Apple) ou un testeur de licence (Google).
+
 ---
 
 ## Structure
@@ -49,6 +61,8 @@ lib/
   metronome.dart       génération du WAV d'un cycle + lecture en boucle (just_audio)
   metronome_card.dart  interface du métronome
   video_card.dart      interface d'analyse : aperçu, bande d'images, repères, résultat
+  purchase.dart        3 analyses gratuites + achat intégré unique
+  paywall.dart         encadré « analyses gratuites » et fenêtre d'achat
   strip.dart           dessin de la bande d'images
   detection.dart       algorithmes de détection (Dart pur)
   native.dart          appels au code natif
@@ -100,5 +114,5 @@ Apple impose une signature :
 
 ## Prochaines étapes possibles
 - Icône et écran de démarrage (`flutter_launcher_icons`, `flutter_native_splash`).
-- Achat intégré unique (3–5 €) après quelques analyses gratuites, et codes promo pour les enseignants (`in_app_purchase`).
+- Codes promo pour les enseignants (codes d'offre App Store / Google Play).
 - Mode voiture : musique calée sur le tempo.
