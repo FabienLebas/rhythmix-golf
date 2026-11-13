@@ -1,0 +1,13 @@
+{
+  "name": "rhythmix-golf-tests",
+  "private": true,
+  "description": "Tests de non-régression du site web Rhythmix Golf (index.html).",
+  "scripts": {
+    "test": "playwright test",
+    "test:web": "playwright test",
+    "fixtures": "python3 tests/fixtures/make_swing_video.py && node tests/fixtures/generate-detection-cases.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

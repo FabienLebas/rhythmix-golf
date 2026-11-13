@@ -108,6 +108,19 @@ Apple impose une signature :
 
 ---
 
+## Tests
+
+```bash
+flutter test                                   # tests unitaires et d'interface (sans appareil)
+flutter test integration_test -d <appareil>    # sur simulateur iOS / émulateur Android / téléphone
+```
+
+- `test/` : détection (parité exacte avec le site), réglages et historique, gratuité et achat intégré (faux App Store / Google Play), son du métronome (WAV), interface complète, analyse vidéo avec un faux décodeur natif.
+- `integration_test/` : décodage natif d'une vraie vidéo de swing (H.264 + AAC), son réel du métronome, analyse de bout en bout. La vidéo est dans `integration_test/swing_video.g.dart` : elle n'est pas embarquée dans l'app publiée.
+- Pour les tests, `AppState` accepte un faux métronome et un faux service d'achat (`AppState(metronome: …, purchase: …)`).
+
+Voir aussi la section « Tests de non-régression » du README à la racine.
+
 ## À savoir
 
 - Le dépôt ne contient pas les dossiers `android/`, `ios/` ni `packages/rhythmix_native/` : `tool/bootstrap.sh` les régénère, et le CI le fait à chaque compilation. Pour personnaliser l'icône ou la signature, lance le script une fois, retire ces dossiers du `.gitignore` et commite-les.

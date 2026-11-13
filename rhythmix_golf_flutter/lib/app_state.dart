@@ -57,6 +57,11 @@ String tempoStatusLabel(TempoStatus s) => switch (s) {
     };
 
 class AppState extends ChangeNotifier {
+  /// [metronome] et [purchase] peuvent être remplacés dans les tests.
+  AppState({Metronome? metronome, PurchaseService? purchase})
+      : metronome = metronome ?? Metronome(),
+        purchase = purchase ?? PurchaseService();
+
   String mode = 'grand';
   final Map<String, Tempo> tempo = {
     'grand': Tempo(kDefaults['grand']![0], kDefaults['grand']![1]),
@@ -65,10 +70,10 @@ class AppState extends ChangeNotifier {
   double pause = 3;
   bool lock = true;
   double speed = 100;
-  final Metronome metronome = Metronome();
+  final Metronome metronome;
 
   /// Analyses gratuites et achat intégré.
-  final PurchaseService purchase = PurchaseService();
+  final PurchaseService purchase;
 
   /// Historique du tempo, stocké sur l'appareil (pas de base de données).
   final Map<String, List<HistoryEntry>> history = {'grand': [], 'putt': []};
