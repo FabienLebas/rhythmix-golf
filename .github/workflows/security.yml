@@ -1,0 +1,29 @@
+name: Sécurité des dépendances
+
+# Vérifie les versions figées dans pubspec.lock contre la base de failles
+# connues OSV (osv.dev). Le build échoue si une faille connue est trouvée.
+# Tourne à chaque push, sur chaque PR, et chaque lundi (une faille peut être
+# découverte dans une librairie même si le code n'a pas changé).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  osv-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Analyser pubspec.lock avec OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+        with:
+          scan-args: |-
+            --lockfile=rhythmix_golf_flutter/pubspec.lock

@@ -1,0 +1,25 @@
+# Dependabot : ouvre automatiquement des PR quand une dépendance a une mise à
+# jour ou un correctif de sécurité. Les alertes de sécurité arrivent sans
+# attendre ; les mises à jour classiques sont regroupées une fois par semaine.
+version: 2
+updates:
+  # Paquets Dart / Flutter (pubspec.yaml + pubspec.lock)
+  - package-ecosystem: pub
+    directory: /rhythmix_golf_flutter
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      dart-mineures:
+        update-types: [minor, patch]
+
+  # GitHub Actions utilisées dans .github/workflows/
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]
