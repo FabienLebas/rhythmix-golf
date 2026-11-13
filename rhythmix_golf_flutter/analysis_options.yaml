@@ -2,3 +2,6 @@
 analyzer:
   exclude:
     - packages/rhythmix_native/example/**
+    - build/**
+    - android/**
+    - ios/**

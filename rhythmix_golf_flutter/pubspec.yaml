@@ -24,6 +24,17 @@ dependencies:
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
+  # Tests de non-régression (voir test/ et integration_test/)
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  # Pour simuler la caméra / galerie dans les tests de widgets
+  image_picker_platform_interface: ^2.10.0
+  # Pour simuler l'App Store / Google Play dans les tests
+  in_app_purchase_platform_interface: ^1.4.0
+  # Temps simulé (relance du métronome, délai de restauration)
+  fake_async: ^1.3.1
 
 # Icônes d'app (App Store / Play Store), générées par tool/bootstrap.sh
 flutter_launcher_icons:

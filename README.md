@@ -103,6 +103,31 @@ Vérifié sur une vidéo de grand jeu en H.264 (images 78 / 138 / 153) et sur un
 
 ---
 
+## Tests de non-régression
+
+Avant chaque évolution, lancer les tests ; une évolution ne doit en casser aucun.
+Ils tournent aussi automatiquement sur GitHub (**Actions › Tests de non-régression**) à chaque push et pull request. Sur `main`, l'APK et l'app iOS ne sont compilés que si tous les tests passent.
+
+| Quoi | Où | Lancer |
+|---|---|---|
+| **Site web** : métronome, réglages, mémorisation, historique, gratuité, analyse vidéo de bout en bout, mise en page téléphone / ordinateur | `tests/web/` (Playwright) | `npm install` puis `npm test` |
+| **App Flutter** : détection, tempo, historique, achat intégré (faux store), son du métronome, interface complète avec une fausse galerie et un faux décodeur | `rhythmix_golf_flutter/test/` | `cd rhythmix_golf_flutter && flutter test` |
+| **iOS et Android** sur simulateur / émulateur : décodage vidéo natif, son réel, analyse de bout en bout | `rhythmix_golf_flutter/integration_test/` | `flutter test integration_test -d <appareil>` |
+
+**Parité web ↔ app.** `tests/fixtures/detection-cases.json` contient 17 cas de détection (son exploitable ou non, sommet par les hanches, putting, 30 à 240 images/s…). Les repères attendus y sont calculés **par le code du site**. Le site et l'app Flutter doivent trouver exactement les mêmes.
+
+**Vidéo de référence.** `tests/fixtures/swing_60fps.mp4` est une vidéo de swing synthétique à repères connus (départ 48, sommet 96, impact 112, avec le bruit de la balle). Le site l'analyse dans le navigateur, et l'app dans les tests sur iOS et Android, avec le décodeur natif.
+
+**Modifier volontairement l'algorithme de détection.** Après la modification, regénérer les références, relire le diff de `detection-cases.json`, puis reporter la même modification dans `index.html` et `lib/detection.dart` :
+
+```bash
+npm run fixtures
+```
+
+(Prérequis : Python 3 avec numpy et ffmpeg, seulement pour regénérer.)
+
+---
+
 ## Installation / hébergement
 
 L'application est un seul fichier HTML :
