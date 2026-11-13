@@ -60,6 +60,10 @@ Future<AppState> _startApp(WidgetTester t) async {
 
 /// Fait défiler jusqu'au bouton (petits écrans) puis le touche.
 Future<void> _tapVisible(WidgetTester t, Finder f) async {
+  // la liste ne construit que ce qui est proche de l'écran : défiler d'abord
+  if (f.evaluate().isEmpty) {
+    await t.scrollUntilVisible(f, 300, scrollable: find.byType(Scrollable).first);
+  }
   await t.ensureVisible(f);
   await t.pumpAndSettle();
   await t.tap(f);
