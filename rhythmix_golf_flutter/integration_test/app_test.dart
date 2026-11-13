@@ -58,6 +58,13 @@ Future<AppState> _startApp(WidgetTester t) async {
   return s;
 }
 
+/// Fait défiler jusqu'au bouton (petits écrans) puis le touche.
+Future<void> _tapVisible(WidgetTester t, Finder f) async {
+  await t.ensureVisible(f);
+  await t.pumpAndSettle();
+  await t.tap(f);
+}
+
 Future<void> _waitFor(WidgetTester t, Finder f, {Duration timeout = const Duration(seconds: 90)}) async {
   final end = DateTime.now().add(timeout);
   while (f.evaluate().isEmpty) {
@@ -138,20 +145,19 @@ void main() {
       expect(find.text('Métronome · grand jeu 3:1'), findsOneWidget);
       expect(find.text('Montée 0,81 s · Descente 0,27 s · Ratio 3,00:1 · Swing 1,08 s'), findsOneWidget);
 
-      await t.tap(find.text('⛳ Putting'));
+      await _tapVisible(t, find.text('⛳ Putting'));
       await t.pumpAndSettle();
       expect(find.text('Métronome · putting 2:1'), findsOneWidget);
       expect(find.text('Montée 0,60 s · Descente 0,30 s · Ratio 2,00:1 · Swing 0,90 s'), findsOneWidget);
 
-      await t.scrollUntilVisible(find.text('▶ Démarrer'), 200, scrollable: find.byType(Scrollable).first);
-      await t.tap(find.text('▶ Démarrer'));
+      await _tapVisible(t, find.text('▶ Démarrer'));
       await t.pump(const Duration(seconds: 1));
       expect(s.running, isTrue);
       expect(find.text('■ Arrêter'), findsOneWidget);
       // les étiquettes suivent le son réellement joué
       await _waitFor(t, find.byWidgetPredicate((w) => w is Text && ['Départ', 'Sommet', 'Impact'].contains(w.data)),
           timeout: const Duration(seconds: 10));
-      await t.tap(find.text('■ Arrêter'));
+      await _tapVisible(t, find.text('■ Arrêter'));
       await t.pump(const Duration(milliseconds: 500));
       expect(s.running, isFalse);
       expect(find.text('▶ Démarrer'), findsOneWidget);
@@ -163,9 +169,7 @@ void main() {
     testWidgets('analyse d’une vidéo de la galerie de bout en bout', (t) async {
       ImagePickerPlatform.instance = _Picker(await _videoFile());
       final s = await _startApp(t);
-      final btn = find.text('Choisir une vidéo');
-      await t.scrollUntilVisible(btn, 200, scrollable: find.byType(Scrollable).first);
-      await t.tap(btn);
+      await _tapVisible(t, find.text('Choisir une vidéo'));
       await _waitFor(t, find.textContaining('Détection terminée'));
       await t.pumpAndSettle();
 
