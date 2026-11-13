@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -75,6 +76,9 @@ class AppState extends ChangeNotifier {
   SharedPreferences? _prefs;
   Timer? _restart;
 
+  /// Tempo de référence (vitesse 100 %) pour le curseur de vitesse.
+  Tempo? _base;
+
   Tempo get cur => tempo[mode]!;
   int get ratioTarget => mode == 'grand' ? 3 : 2;
   bool get running => metronome.running;
@@ -87,7 +91,7 @@ class AppState extends ChangeNotifier {
       if (mode != 'grand' && mode != 'putt') mode = 'grand';
       for (final k in ['grand', 'putt']) {
         final b = p.getDouble('${k}_b'), d = p.getDouble('${k}_d');
-        if (b != null && d != null && b > 0 && d > 0) tempo[k] = Tempo(b, d);
+        if (b != null && d != null && b > 0 && d > 0) tempo[k] = _snap(b, d, b / d, k == 'grand' ? 3 : 2);
       }
       pause = p.getDouble('pause') ?? pause;
       lock = p.getBool('lock') ?? lock;
@@ -161,32 +165,49 @@ class AppState extends ChangeNotifier {
     if (m == mode) return;
     mode = m;
     speed = 100;
+    _base = null;
     _changed();
+  }
+
+  /// Ratio à conserver : le ratio cible exact s'il en est proche
+  /// (évite que les arrondis le fassent dériver), sinon le ratio actuel.
+  double get _lockRatio {
+    final r = cur.b / cur.d;
+    return (r - ratioTarget).abs() < 0.05 ? ratioTarget.toDouble() : r;
   }
 
   void setB(double v) {
     if (!(v > 0)) return;
-    final r = cur.b / cur.d;
-    cur.b = v;
-    if (lock) cur.d = v / r;
+    if (lock) {
+      final r = _lockRatio;
+      tempo[mode] = _snap(v, v / r, r, ratioTarget);
+    } else {
+      cur.b = v;
+    }
     speed = 100;
+    _base = null;
     _changed();
   }
 
   void setD(double v) {
     if (!(v > 0)) return;
-    final r = cur.b / cur.d;
-    cur.d = v;
-    if (lock) cur.b = v * r;
+    if (lock) {
+      final r = _lockRatio;
+      tempo[mode] = _snap(v * r, v, r, ratioTarget);
+    } else {
+      cur.d = v;
+    }
     speed = 100;
+    _base = null;
     _changed();
   }
 
   /// Vitesse en % : à droite plus rapide (durées plus courtes), ratio conservé.
   void setSpeed(double n) {
-    final f = speed / n;
-    cur.b *= f;
-    cur.d *= f;
+    final base = _base ??= Tempo(cur.b, cur.d);
+    final r = (base.b / base.d - ratioTarget).abs() < 0.05 ? ratioTarget.toDouble() : base.b / base.d;
+    final d = base.d * 100 / n;
+    tempo[mode] = _snap(d * r, d, r, ratioTarget);
     speed = n;
     _changed();
   }
@@ -205,14 +226,17 @@ class AppState extends ChangeNotifier {
     final dft = kDefaults[mode]!;
     tempo[mode] = Tempo(dft[0], dft[1]);
     speed = 100;
+    _base = null;
     _changed();
   }
 
   /// Réglage automatique après l'analyse d'une vidéo (tempo cible).
   void applyTarget(double b, double d) {
-    if ((cur.b - b).abs() < 1e-6 && (cur.d - d).abs() < 1e-6) return;
-    tempo[mode] = Tempo(b, d);
+    final t = _snap(b, d, b / d, ratioTarget);
+    if ((cur.b - t.b).abs() < 1e-6 && (cur.d - t.d).abs() < 1e-6) return;
+    tempo[mode] = t;
     speed = 100;
+    _base = null;
     _changed();
   }
 
@@ -227,6 +251,19 @@ class AppState extends ChangeNotifier {
     }
     notifyListeners();
   }
+}
+
+double round2(double x) => (x * 100).round() / 100;
+
+/// Arrondit au centième de seconde en gardant un ratio exact :
+/// au ratio cible (3:1 ou 2:1), la montée vaut toujours strictement
+/// descente x ratio, telle qu'affichée (ex. 0,27 s -> 0,81 s).
+Tempo _snap(double b, double d, double r, int target) {
+  if ((r - target).abs() < 0.05) {
+    final dd = max(0.01, round2(d));
+    return Tempo(round2(dd * target), dd);
+  }
+  return Tempo(max(0.01, round2(b)), max(0.01, round2(d)));
 }
 
 String fmt2(double x) => x.toStringAsFixed(2).replaceAll('.', ',');

@@ -28,6 +28,9 @@ class _MetronomeCardState extends State<MetronomeCard> {
     super.initState();
     _sync();
     s.addListener(_onState);
+    // En quittant un champ, on affiche la valeur retenue (arrondie, ratio exact).
+    _bf.addListener(_sync);
+    _df.addListener(_sync);
   }
 
   @override
