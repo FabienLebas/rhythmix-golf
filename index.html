@@ -123,6 +123,16 @@ try{var x=localStorage.getItem("tg2");if(x)S=Object.assign(S,JSON.parse(x))}catc
 if(S.unit!=="img"){["grand","putt"].forEach(function(k){S[k].b=S[k].b*30/1000;S[k].d=S[k].d*30/1000});S.unit="img"}
 [[27,9,"grand"],[24,8.1,"grand"],[24.381,8.1,"grand"],[20,10,"putt"],[18,18,"putt"]].forEach(function(o){if(S[o[2]]&&S[o[2]].b===o[0]&&S[o[2]].d===o[1])S[o[2]]={b:DEF[o[2]].b,d:DEF[o[2]].d}});
 S.sp=100;
+/* Durées arrondies au centième avec un ratio exact : au ratio cible (3:1 ou 2:1),
+   la montée vaut strictement descente x ratio telle qu'affichée (0,27 s -> 0,81 s). */
+function tgt(m){return (m||S.mode)==="grand"?3:2}
+function r2(x){return Math.round(x*100)/100}
+function snap(b,d,r,m){var T=tgt(m);if(Math.abs(r-T)<0.05){var dd=Math.max(0.01,r2(d));return {b:r2(dd*T),d:dd}}return {b:Math.max(0.01,r2(b)),d:Math.max(0.01,r2(d))}}
+function setSec(t,m){S[m||S.mode]={b:t.b*30,d:t.d*30}}
+function curSec(){var p=S[S.mode];return {b:p.b/30,d:p.d/30}}
+function lockRatio(){var c=curSec(),r=c.b/c.d,T=tgt();return Math.abs(r-T)<0.05?T:r}
+var base=null;
+["grand","putt"].forEach(function(k){var b=S[k].b/30,d=S[k].d/30;if(b>0&&d>0)setSec(snap(b,d,b/d,k),k)});
 function save(){try{localStorage.setItem("tg2",JSON.stringify(S))}catch(e){}}
 function toMs(v){return S.unit==="img"?v*1000/30:v}
 function fromMs(ms){return S.unit==="img"?Math.round(ms*30/100)/10:Math.round(ms)}
@@ -147,12 +157,14 @@ function renderInfo(){
   var p=S[S.mode],b=toMs(p.b)/1000,d=toMs(p.d)/1000;
   $("info").textContent="Montée "+fmt(b)+" s · Descente "+fmt(d)+" s · Ratio "+(b/d).toFixed(2).replace(".",",")+":1 · Swing "+fmt(b+d)+" s";
 }
-document.querySelectorAll("#modes button").forEach(function(e){e.onclick=function(){S.mode=e.dataset.m;S.sp=100;save();render();if(!busy&&lastQ)detect()}});
-$("b").oninput=function(){var v=fromSec(parseFloat(this.value)),p=S[S.mode];if(v>0){var r=p.b/p.d;p.b=v;if(S.lock){p.d=v/r;$("d").value=sh(p.d)}S.sp=100;$("speed").value=100;$("sv").textContent=100;save();renderInfo()}};
-$("d").oninput=function(){var v=fromSec(parseFloat(this.value)),p=S[S.mode];if(v>0){var r=p.b/p.d;p.d=v;if(S.lock){p.b=v*r;$("b").value=sh(p.b)}S.sp=100;$("speed").value=100;$("sv").textContent=100;save();renderInfo()}};
-$("speed").oninput=function(){var n=parseFloat(this.value),f=S.sp/n,p=S[S.mode];p.b*=f;p.d*=f;S.sp=n;$("sv").textContent=n;fields();save();renderInfo()};
+document.querySelectorAll("#modes button").forEach(function(e){e.onclick=function(){S.mode=e.dataset.m;S.sp=100;base=null;save();render();if(!busy&&lastQ)detect()}});
+function speed100(){S.sp=100;base=null;$("speed").value=100;$("sv").textContent=100}
+$("b").oninput=function(){var v=parseFloat(this.value);if(v>0){if(S.lock){var r=lockRatio(),t=snap(v,v/r,r);setSec(t);$("d").value=t.d.toFixed(2)}else S[S.mode].b=v*30;speed100();save();renderInfo()}};
+$("d").oninput=function(){var v=parseFloat(this.value);if(v>0){if(S.lock){var r=lockRatio(),t=snap(v*r,v,r);setSec(t);$("b").value=t.b.toFixed(2)}else S[S.mode].d=v*30;speed100();save();renderInfo()}};
+$("b").onchange=$("d").onchange=fields;
+$("speed").oninput=function(){var n=parseFloat(this.value);base=base||curSec();var T=tgt(),r=Math.abs(base.b/base.d-T)<0.05?T:base.b/base.d,d=base.d*100/n;setSec(snap(d*r,d,r));S.sp=n;$("sv").textContent=n;fields();save();renderInfo()};
 $("lock").onchange=function(){S.lock=this.checked;save()};
-$("reset").onclick=function(){var D=DEF[S.mode],k=S.unit==="img"?1:1000/30;S[S.mode]={b:D.b*k,d:D.d*k};S.sp=100;save();render()};
+$("reset").onclick=function(){var D=DEF[S.mode],k=S.unit==="img"?1:1000/30;S[S.mode]={b:D.b*k,d:D.d*k};S.sp=100;base=null;save();render()};
 $("pause").oninput=function(){S.pause=parseFloat(this.value);$("pv").textContent=S.pause;save()};
 
 /* Audio */
@@ -303,18 +315,24 @@ $('ov').onclick=function(e){if(!n||busy)return;var r=this.getBoundingClientRect(
   sel=i;setPos(M[i]);
 }});
 function suggestInto(res,sug,b,d){
-  var r=PARAMS[S.mode].ratioT,bb=d*r,rt=b/d,nom=S.mode==="grand"?"grand jeu":"putting",adv;
+  // Tempo cible arrondi comme le métronome : montée = exactement r x descente.
+  var r=PARAMS[S.mode].ratioT,dd=Math.max(10,Math.round(d/10)*10),bb=dd*r,rt=b/d,nom=S.mode==="grand"?"grand jeu":"putting",adv;
   res.textContent='Ton rythme : montée '+fmt(b/1000)+' s, descente '+fmt(d/1000)+' s, ratio '+rt.toFixed(1).replace('.',',')+':1 (swing '+fmt((b+d)/1000)+' s).';
   if(Math.abs(rt-r)<=0.15)adv='Ton rythme est déjà proche du '+r+':1, continue comme ça.';
-  else if(rt>r)adv='Ta montée est trop lente : accélère-la d’environ '+fmt((b-bb)/1000)+' s (de '+fmt(b/1000)+' s à '+fmt(bb/1000)+' s) et garde la même descente.';
-  else adv='Ta montée est trop rapide : ralentis-la d’environ '+fmt((bb-b)/1000)+' s (de '+fmt(b/1000)+' s à '+fmt(bb/1000)+' s) et garde la même descente.';
-  sug.innerHTML='<div class="info">'+adv+'</div><p class="small">Le métronome est réglé sur ton tempo cible '+nom+' '+r+':1 : montée '+fmt(bb/1000)+' s, descente '+fmt(d/1000)+' s.</p>';
+  else if(S.mode==="grand"){
+    if(rt>r)adv='Ta montée est trop lente : accélère-la d’environ '+fmt((b-bb)/1000)+' s (de '+fmt(b/1000)+' s à '+fmt(bb/1000)+' s) et garde la même descente.';
+    else adv='Ta montée est trop rapide : ralentis-la d’environ '+fmt((bb-b)/1000)+' s (de '+fmt(b/1000)+' s à '+fmt(bb/1000)+' s) et garde la même descente.';
+  }
+  // Au putting, c'est l'équilibre montée / descente qui compte : on peut corriger d'un côté comme de l'autre.
+  else if(rt>r)adv='Ta montée est trop longue par rapport à ta descente. Monte un peu plus franchement (environ '+fmt(bb/1000)+' s au lieu de '+fmt(b/1000)+' s), ou laisse le putter redescendre plus tranquillement, sans le pousser vers la balle.';
+  else adv='Tu montes trop vite par rapport à ta descente. Prends ton temps en montant (environ '+fmt(bb/1000)+' s au lieu de '+fmt(b/1000)+' s), ou accélère un peu plus franchement à travers la balle.';
+  sug.innerHTML='<div class="info">'+adv+'</div><p class="small">Le métronome est réglé sur ton tempo cible '+nom+' '+r+':1 : montée '+fmt(bb/1000)+' s, descente '+fmt(dd/1000)+' s.</p>';
 }
 function vcompute(){
   if(M.indexOf(null)>=0)return;
   var b=(M[1]-M[0])/fpsv*1000/vslow(),d=(M[2]-M[1])/fpsv*1000/vslow();
   if(b<=0||d<=0){$('vres').textContent='L’ordre doit être : départ, sommet, impact.';$('vsug').innerHTML='';return}
-  var bt=d*PARAMS[S.mode].ratioT;S[S.mode]={b:S.unit==='img'?bt*30/1000:bt,d:S.unit==='img'?d*30/1000:d};S.sp=100;$('speed').value=100;$('sv').textContent=100;fields();renderInfo();save();
+  var rT=PARAMS[S.mode].ratioT;setSec(snap(d*rT/1000,d/1000,rT));S.sp=100;base=null;$('speed').value=100;$('sv').textContent=100;fields();renderInfo();save();
   suggestInto($('vres'),$('vsug'),b,d);
   hRecord(b,d);
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'app_state.dart';
 import 'history_card.dart';
@@ -6,10 +7,16 @@ import 'metronome_card.dart';
 import 'video_card.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  // L'écran de démarrage (logo complet) reste affiché au moins 1,5 s.
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
+  final shown = Stopwatch()..start();
   final state = AppState();
   await state.load();
   runApp(RhythmixApp(state: state));
+  final left = const Duration(milliseconds: 1500) - shown.elapsed;
+  if (left > Duration.zero) await Future<void>.delayed(left);
+  FlutterNativeSplash.remove();
 }
 
 class RhythmixApp extends StatelessWidget {
@@ -45,20 +52,6 @@ class HomePage extends StatelessWidget {
     final video = VideoCard(state: state);
     final hist = HistoryCard(state: state);
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-              child: Image.asset('assets/logo_mark.png', height: 32),
-            ),
-            const SizedBox(width: 10),
-            const Text('Rhythmix Golf'),
-          ],
-        ),
-      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, c) {

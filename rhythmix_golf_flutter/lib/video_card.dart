@@ -318,24 +318,35 @@ class _VideoCardState extends State<VideoCard> {
     final (b, d) = md;
     if (b <= 0 || d <= 0) return [const InfoBox('L’ordre doit être : départ, sommet, impact.')];
     final r = s.ratioTarget;
-    final bb = d * r, rt = b / d;
+    // Tempo cible arrondi comme le métronome : montée = exactement r x descente.
+    final dd = math.max(0.01, round2(d)), bb = dd * r, rt = b / d;
     final nom = s.mode == 'grand' ? 'grand jeu' : 'putting';
     String adv;
     if ((rt - r).abs() <= 0.15) {
       adv = 'Ton rythme est déjà proche du $r:1, continue comme ça.';
-    } else if (rt > r) {
-      adv = 'Ta montée est trop lente : accélère-la d’environ ${fmt2(b - bb)} s '
-          '(de ${fmt2(b)} s à ${fmt2(bb)} s) et garde la même descente.';
+    } else if (s.mode == 'grand') {
+      adv = rt > r
+          ? 'Ta montée est trop lente : accélère-la d’environ ${fmt2(b - bb)} s '
+              '(de ${fmt2(b)} s à ${fmt2(bb)} s) et garde la même descente.'
+          : 'Ta montée est trop rapide : ralentis-la d’environ ${fmt2(bb - b)} s '
+              '(de ${fmt2(b)} s à ${fmt2(bb)} s) et garde la même descente.';
     } else {
-      adv = 'Ta montée est trop rapide : ralentis-la d’environ ${fmt2(bb - b)} s '
-          '(de ${fmt2(b)} s à ${fmt2(bb)} s) et garde la même descente.';
+      // Au putting, c'est l'équilibre montée / descente qui compte :
+      // on peut corriger d'un côté comme de l'autre.
+      adv = rt > r
+          ? 'Ta montée est trop longue par rapport à ta descente. '
+              'Monte un peu plus franchement (environ ${fmt2(bb)} s au lieu de ${fmt2(b)} s), '
+              'ou laisse le putter redescendre plus tranquillement, sans le pousser vers la balle.'
+          : 'Tu montes trop vite par rapport à ta descente. '
+              'Prends ton temps en montant (environ ${fmt2(bb)} s au lieu de ${fmt2(b)} s), '
+              'ou accélère un peu plus franchement à travers la balle.';
     }
     return [
       InfoBox('Ton rythme : montée ${fmt2(b)} s, descente ${fmt2(d)} s, '
           'ratio ${rt.toStringAsFixed(1).replaceAll('.', ',')}:1 (swing ${fmt2(b + d)} s).'),
       InfoBox(adv),
       Text('Le métronome est réglé sur ton tempo cible $nom $r:1 : '
-          'montée ${fmt2(bb)} s, descente ${fmt2(d)} s.', style: muted),
+          'montée ${fmt2(bb)} s, descente ${fmt2(dd)} s.', style: muted),
     ];
   }
 
