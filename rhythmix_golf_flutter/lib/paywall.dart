@@ -1,10 +1,42 @@
 import 'package:flutter/material.dart';
 
+import 'format.dart';
+import 'l10n/app_localizations.dart';
 import 'purchase.dart';
 
-/// Texte de prix : « 2,99 € (prix de lancement), puis 4,99 € ».
-String priceLine(PurchaseService p) =>
-    kLaunchOffer ? '${p.price} en prix de lancement, puis $kRegularPrice' : p.price;
+/// Prix normal formaté (« 4,99 € »), ou null si on ne le connaît pas.
+String? regularPriceText(AppLocalizations l, PurchaseService p) {
+  final r = p.regularPrice, c = p.product?.currencyCode;
+  return r == null || c == null ? null : fmtMoney(r, c, l.localeName);
+}
+
+/// Texte de prix : « 2,99 € en prix de lancement, puis 4,99 € » pendant le
+/// lancement, sinon le prix du store seul. Null tant que le store n'a pas
+/// répondu : on n'annonce jamais un prix qu'on ne connaît pas.
+String? priceLine(AppLocalizations l, PurchaseService p) {
+  final price = p.price;
+  if (price == null) return null;
+  final regular = regularPriceText(l, p);
+  return p.isLaunchPrice && regular != null ? l.priceLaunch(price, regular) : price;
+}
+
+/// « : 2,99 € … » à placer après « pour le prix d'un seau de balles ».
+String _clause(AppLocalizations l, PurchaseService p) {
+  final line = priceLine(l, p);
+  return line == null ? '' : l.priceClause(line);
+}
+
+/// Texte d'un message d'achat, dans la langue de l'app.
+String purchaseMessageText(AppLocalizations l, PurchaseMessage m) {
+  final d = m.detail;
+  return switch (m.issue) {
+    PurchaseIssue.buyUnavailable => l.msgBuyUnavailable,
+    PurchaseIssue.buyFailed => d == null ? l.msgBuyFailed : l.msgBuyFailedDetail(d),
+    PurchaseIssue.restoreFailed => l.msgRestoreFailed(d ?? ''),
+    PurchaseIssue.nothingToRestore => l.msgNothingToRestore,
+    PurchaseIssue.storeUnavailable => l.msgStoreUnavailable,
+  };
+}
 
 /// Encadré permanent de la carte d'analyse : explique la gratuité limitée.
 class FreeTrialBanner extends StatelessWidget {
@@ -15,17 +47,16 @@ class FreeTrialBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     if (purchase.unlocked) return const SizedBox.shrink();
     final t = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final left = purchase.remaining;
+    final clause = _clause(l, purchase);
     final String text;
     if (left == kFreeAnalyses) {
-      text = '🎁 Les $kFreeAnalyses premières analyses vidéo sont gratuites. '
-          'Ensuite, un seul paiement, pour le prix d’un seau de balles : ${priceLine(purchase)}.';
+      text = l.freeIntro(kFreeAnalyses, clause);
     } else if (left > 0) {
-      text = '🎁 Analyses gratuites : il t’en reste $left sur $kFreeAnalyses. '
-          'Ensuite, un seul paiement, pour le prix d’un seau de balles : ${priceLine(purchase)}.';
+      text = l.freeLeft(left, kFreeAnalyses, clause);
     } else {
-      text = '🔒 Tes $kFreeAnalyses analyses gratuites sont utilisées. '
-          'Pour le prix d’un seau de balles : ${priceLine(purchase)}, une seule fois.';
+      text = l.freeUsed(kFreeAnalyses, clause);
     }
     return Container(
       width: double.infinity,
@@ -44,7 +75,7 @@ class FreeTrialBanner extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => showPaywall(context, purchase),
-                child: const Text('Débloquer'),
+                child: Text(l.unlock),
               ),
             ),
         ],
@@ -73,6 +104,7 @@ class _PaywallSheet extends StatelessWidget {
       listenable: purchase,
       builder: (context, _) {
         final t = Theme.of(context);
+        final l = AppLocalizations.of(context);
         final muted = TextStyle(fontSize: 14, color: t.colorScheme.onSurfaceVariant);
         if (purchase.unlocked) {
           return Padding(
@@ -82,17 +114,18 @@ class _PaywallSheet extends StatelessWidget {
               children: [
                 const Text('🎉', style: TextStyle(fontSize: 44)),
                 const SizedBox(height: 8),
-                const Text('Merci, c’est débloqué !',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                Text(l.payThanks, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                Text('Analyses vidéo illimitées, pour toujours.', style: muted),
+                Text(l.payThanksSub, style: muted),
                 const SizedBox(height: 16),
-                FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Continuer')),
+                FilledButton(onPressed: () => Navigator.pop(context), child: Text(l.payContinue)),
               ],
             ),
           );
         }
         final busy = purchase.purchasing;
+        final price = purchase.price;
+        final regular = purchase.isLaunchPrice ? regularPriceText(l, purchase) : null;
         return SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
@@ -102,40 +135,28 @@ class _PaywallSheet extends StatelessWidget {
               children: [
                 const Center(child: Text('⛳🪣', style: TextStyle(fontSize: 40))),
                 const SizedBox(height: 8),
-                const Text(
-                  'Pour le prix d’un seau de balles',
+                Text(
+                  l.payTitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  purchase.remaining > 0
-                      ? 'Il te reste ${purchase.remaining} analyse${purchase.remaining > 1 ? 's' : ''} gratuite'
-                          '${purchase.remaining > 1 ? 's' : ''}.'
-                      : 'Tes $kFreeAnalyses analyses gratuites sont utilisées.',
+                  purchase.remaining > 0 ? l.payLeft(purchase.remaining) : l.payUsed(kFreeAnalyses),
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Débloque les analyses vidéo illimitées avec un seul paiement : '
-                  'pas d’abonnement, pas de mauvaise surprise. '
-                  'Le métronome et ton historique restent gratuits.',
-                  textAlign: TextAlign.center,
-                  style: muted,
-                ),
+                Text(l.payBody, textAlign: TextAlign.center, style: muted),
                 const SizedBox(height: 16),
-                if (kLaunchOffer)
+                if (regular != null)
                   Center(
                     child: Text.rich(
                       TextSpan(
                         style: muted,
                         children: [
-                          const TextSpan(text: 'Prix de lancement  '),
-                          TextSpan(
-                            text: kRegularPrice,
-                            style: const TextStyle(decoration: TextDecoration.lineThrough),
-                          ),
+                          TextSpan(text: '${l.payLaunchLabel}  '),
+                          TextSpan(text: regular, style: const TextStyle(decoration: TextDecoration.lineThrough)),
                         ],
                       ),
                     ),
@@ -146,20 +167,20 @@ class _PaywallSheet extends StatelessWidget {
                   onPressed: busy ? null : purchase.buy,
                   child: busy
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text('Débloquer pour ${purchase.price}', style: const TextStyle(fontSize: 17)),
+                      : Text(price == null ? l.unlock : l.payBuy(price), style: const TextStyle(fontSize: 17)),
                 ),
                 if (purchase.message != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: Text(purchase.message!,
+                    child: Text(purchaseMessageText(l, purchase.message!),
                         textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: t.colorScheme.error)),
                   ),
                 const SizedBox(height: 4),
-                TextButton(onPressed: busy ? null : purchase.restore, child: const Text('Restaurer mes achats')),
-                if (purchase.remaining > 0)
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Plus tard')),
-                if (purchase.remaining == 0)
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer')),
+                TextButton(onPressed: busy ? null : purchase.restore, child: Text(l.payRestore)),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(purchase.remaining > 0 ? l.payLater : l.payClose),
+                ),
               ],
             ),
           ),

@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
@@ -40,18 +41,18 @@ class FakeMetronome extends Metronome {
   }
 
   @override
-  String? label() => running ? 'Départ' : null;
+  int? beat() => running ? 0 : null;
 }
 
 // ---------------------------------------------------------------- Store
 
-ProductDetails fakeProduct({String price = '2,99 €'}) => ProductDetails(
+ProductDetails fakeProduct({String price = '2,99 €', double raw = 2.99, String currency = 'EUR'}) => ProductDetails(
       id: kProductId,
       title: 'Rhythmix Golf',
       description: 'Analyses illimitées',
       price: price,
-      rawPrice: 2.99,
-      currencyCode: 'EUR',
+      rawPrice: raw,
+      currencyCode: currency,
     );
 
 PurchaseDetails fakePurchase(PurchaseStatus status, {String productId = kProductId, bool pending = true}) {
@@ -230,6 +231,8 @@ class FakeVideo {
 
 /// Affiche l'application complète, sur une surface assez haute pour que tout
 /// soit visible sans défilement (ou en mode large, >= 900 px).
+/// La langue de l'appareil simulé est le français, sauf si [locale] dit autre chose
+/// (la plupart des tests vérifient les textes français).
 /// La police des tests (un carré par caractère) est ~30 % plus large qu'une
 /// vraie police : 560 px de test ≈ un téléphone de 420 px.
 Future<AppState> pumpApp(
@@ -237,8 +240,11 @@ Future<AppState> pumpApp(
   Map<String, Object> prefs = const {},
   FakeMetronome? metronome,
   bool wide = false,
+  Locale locale = const Locale('fr'),
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
+  t.platformDispatcher.localesTestValue = [locale];
+  addTearDown(t.platformDispatcher.clearLocalesTestValue);
   t.view.physicalSize = wide ? const Size(1400, 2400) : const Size(560, 3600);
   t.view.devicePixelRatio = 1;
   addTearDown(t.view.reset);

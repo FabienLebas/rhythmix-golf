@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 const markerColors = [Color(0xFF2F9E5A), Color(0xFFE08A1E), Color(0xFFD6453D)];
-const markerNames = ['Départ', 'Sommet', 'Impact'];
 
 Future<ui.Image> rgbaToImage(Uint8List rgba, int w, int h) {
   final c = Completer<ui.Image>();

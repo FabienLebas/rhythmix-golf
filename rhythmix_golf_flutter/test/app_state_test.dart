@@ -260,16 +260,11 @@ void main() {
       expect(tempoStatus(2.5, 3), TempoStatus.fast);
       expect(tempoStatus(2.2, 2), TempoStatus.slow);
       expect(tempoStatus(1.7, 2), TempoStatus.fast);
-      expect(tempoStatusLabel(TempoStatus.ok), 'Dans la cible');
-      expect(tempoStatusLabel(TempoStatus.slow), 'Trop lent');
-      expect(tempoStatusLabel(TempoStatus.fast), 'Trop rapide');
     });
   });
 
   group('formats', () {
-    test('fmt2 et round2', () {
-      expect(fmt2(0.81), '0,81');
-      expect(fmt2(1.5), '1,50');
+    test('round2', () {
       expect(round2(0.225), 0.23);
       expect(round2(0.8149), 0.81);
     });

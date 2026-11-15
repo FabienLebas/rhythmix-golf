@@ -115,7 +115,7 @@ test.describe('réglages', () => {
     await expect(page.locator('#pause')).toHaveAttribute('min', '1');
     await expect(page.locator('#pause')).toHaveAttribute('max', '8');
     await setRange(page, '#pause', 5.5);
-    await expect(page.locator('#pv')).toHaveText('5.5');
+    await expect(page.locator('#pv')).toHaveText('5,5');
     expect((await state(page)).pause).toBe(5.5);
     await app.noErrors();
   });

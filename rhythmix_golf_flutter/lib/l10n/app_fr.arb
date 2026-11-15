@@ -1,0 +1,216 @@
+{
+  "@@locale": "fr",
+
+  "appTitle": "Rhythmix Golf",
+
+  "modeGrand": "🏌️ Grand jeu",
+  "modeGrandSub": "tempo 3 : 1",
+  "modePutt": "⛳ Putting",
+  "modePuttSub": "tempo 2 : 1",
+
+  "markerStart": "Départ",
+  "markerTop": "Sommet",
+  "markerImpact": "Impact",
+
+  "metroTitle": "{mode, select, grand{Métronome · grand jeu 3:1} other{Métronome · putting 2:1}}",
+  "@metroTitle": { "placeholders": { "mode": { "type": "String" } } },
+  "fieldUp": "Montée (secondes)",
+  "fieldDown": "Descente (secondes)",
+  "keepRatio": "Garder le ratio quand je modifie un chiffre",
+  "swingSpeed": "Vitesse du swing : {percent} %",
+  "@swingSpeed": { "placeholders": { "percent": { "type": "int" } } },
+  "resetDefaults": "Valeurs par défaut",
+  "metroSummary": "Montée {up} s · Descente {down} s · Ratio {ratio}:1 · Swing {total} s",
+  "@metroSummary": {
+    "placeholders": {
+      "up": { "type": "String" },
+      "down": { "type": "String" },
+      "ratio": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "pauseBetween": "Pause entre deux swings : {seconds} s",
+  "@pauseBetween": { "placeholders": { "seconds": { "type": "String" } } },
+  "metroStart": "▶ Démarrer",
+  "metroStop": "■ Arrêter",
+  "metroHelp": "Trois sons par swing : départ (grave), sommet du backswing (moyen), impact (aigu). Le son continue écran verrouillé et en mode silencieux.",
+
+  "analyzeTitle": "{mode, select, grand{Analyser un grand jeu} other{Analyser un putt}}",
+  "@analyzeTitle": { "placeholders": { "mode": { "type": "String" } } },
+  "filmTip": "📱 Filme-toi de face (face à la caméra), téléphone immobile, golfeur entier dans l’image, avec le son : le bruit de la balle sert à repérer l’impact. Pour plus de précision, filme à 60 images/s avec l’appareil photo puis choisis la vidéo.",
+  "btnFilm": "Filmer",
+  "btnPick": "Choisir une vidéo",
+  "videoIntro": "Filme ou choisis une vidéo : l’app lit la cadence, analyse chaque image et place les trois repères toute seule.",
+  "videoCheck": "Vérifie chaque repère : fais glisser la bande d’images pour trouver la bonne image.",
+  "stripHelp": "Fais glisser la bande d’images comme dans un logiciel de montage. Touche Départ, Sommet ou Impact pour le sélectionner : en faisant glisser, le repère suit l’image affichée sous le trait blanc. Retouche le même bouton pour le désélectionner.",
+  "frameLabel": "Image {index} / {last} · {time} s",
+  "@frameLabel": {
+    "placeholders": {
+      "index": { "type": "int" },
+      "last": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+  "videoInfo": "Vidéo : {width} × {height} · {fps} images/s · {seconds} s",
+  "@videoInfo": {
+    "placeholders": {
+      "width": { "type": "int" },
+      "height": { "type": "int" },
+      "fps": { "type": "String" },
+      "seconds": { "type": "String" }
+    }
+  },
+  "statusLoading": "Chargement…",
+  "statusAnalyzing": "Analyse… {percent} % (image {done} / {total}, {seconds} s)",
+  "@statusAnalyzing": {
+    "placeholders": {
+      "percent": { "type": "int" },
+      "done": { "type": "int" },
+      "total": { "type": "int" },
+      "seconds": { "type": "int" }
+    }
+  },
+  "hintFps": "Cadence lue dans le fichier : {fps} images/s.",
+  "@hintFps": { "placeholders": { "fps": { "type": "String" } } },
+  "hintPutt": "Détection terminée (putt : repérage par le mouvement, sans le son).",
+  "hintGrandBall": "Détection terminée (impact repéré grâce au bruit de la balle, à {time} s).",
+  "@hintGrandBall": { "placeholders": { "time": { "type": "String" } } },
+  "hintGrandBallHip": "Détection terminée (impact repéré grâce au bruit de la balle, à {time} s), sommet repéré au départ des hanches.",
+  "@hintGrandBallHip": { "placeholders": { "time": { "type": "String" } } },
+  "hintGrandMotion": "Détection terminée (son non exploitable : impact estimé d’après le mouvement, moins précis).",
+  "hintGrandMotionHip": "Détection terminée (son non exploitable : impact estimé d’après le mouvement, moins précis), sommet repéré au départ des hanches.",
+
+  "errOpenCamera": "Impossible d’ouvrir la caméra ({detail}).",
+  "@errOpenCamera": { "placeholders": { "detail": { "type": "String" } } },
+  "errOpenGallery": "Impossible d’ouvrir la galerie ({detail}).",
+  "@errOpenGallery": { "placeholders": { "detail": { "type": "String" } } },
+  "errAnalyze": "Impossible d’analyser cette vidéo ({detail}).",
+  "@errAnalyze": { "placeholders": { "detail": { "type": "String" } } },
+  "failUnreadable": "vidéo illisible",
+  "failTooShort": "vidéo trop courte",
+  "failNoMotion": "aucun mouvement détecté",
+
+  "resultOrder": "L’ordre doit être : départ, sommet, impact.",
+  "resultRhythm": "Ton rythme : montée {up} s, descente {down} s, ratio {ratio}:1 (swing {total} s).",
+  "@resultRhythm": {
+    "placeholders": {
+      "up": { "type": "String" },
+      "down": { "type": "String" },
+      "ratio": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "resultMetroSet": "{mode, select, grand{Le métronome est réglé sur ton tempo cible grand jeu {ratio}:1 : montée {up} s, descente {down} s.} other{Le métronome est réglé sur ton tempo cible putting {ratio}:1 : montée {up} s, descente {down} s.}}",
+  "@resultMetroSet": {
+    "placeholders": {
+      "mode": { "type": "String" },
+      "ratio": { "type": "int" },
+      "up": { "type": "String" },
+      "down": { "type": "String" }
+    }
+  },
+  "adviceClose": "Ton rythme est déjà proche du {ratio}:1, continue comme ça.",
+  "@adviceClose": { "placeholders": { "ratio": { "type": "int" } } },
+  "adviceGrandSlow": "Ta montée est trop lente : accélère-la d’environ {delta} s (de {from} s à {to} s) et garde la même descente.",
+  "@adviceGrandSlow": {
+    "placeholders": {
+      "delta": { "type": "String" },
+      "from": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "adviceGrandFast": "Ta montée est trop rapide : ralentis-la d’environ {delta} s (de {from} s à {to} s) et garde la même descente.",
+  "@adviceGrandFast": {
+    "placeholders": {
+      "delta": { "type": "String" },
+      "from": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "advicePuttSlow": "Ta montée est trop longue par rapport à ta descente. Monte un peu plus franchement (environ {to} s au lieu de {from} s), ou laisse le putter redescendre plus tranquillement, sans le pousser vers la balle.",
+  "@advicePuttSlow": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "advicePuttFast": "Tu montes trop vite par rapport à ta descente. Prends ton temps en montant (environ {to} s au lieu de {from} s), ou accélère un peu plus franchement à travers la balle.",
+  "@advicePuttFast": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+
+  "historyTitle": "{mode, select, grand{Historique · grand jeu} other{Historique · putting}}",
+  "@historyTitle": { "placeholders": { "mode": { "type": "String" } } },
+  "historyEmpty": "Aucune analyse pour l’instant. Chaque vidéo analysée ajoute un point (ratio montée : descente) à ce graphique.",
+  "historyClear": "Effacer cet historique",
+  "historyClearTitle": "{mode, select, grand{Effacer l’historique du grand jeu ?} other{Effacer l’historique du putting ?}}",
+  "@historyClearTitle": { "placeholders": { "mode": { "type": "String" } } },
+  "cancel": "Annuler",
+  "erase": "Effacer",
+  "tempoOk": "Dans la cible",
+  "tempoSlow": "Trop lent",
+  "tempoFast": "Trop rapide",
+  "chartTarget": "cible {target}:1",
+  "@chartTarget": { "placeholders": { "target": { "type": "int" } } },
+
+  "priceClause": " : {price}",
+  "@priceClause": { "placeholders": { "price": { "type": "String" } } },
+  "priceLaunch": "{price} en prix de lancement, puis {regular}",
+  "@priceLaunch": {
+    "placeholders": {
+      "price": { "type": "String" },
+      "regular": { "type": "String" }
+    }
+  },
+  "freeIntro": "🎁 Les {count} premières analyses vidéo sont gratuites. Ensuite, un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.",
+  "@freeIntro": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "priceClause": { "type": "String" }
+    }
+  },
+  "freeLeft": "🎁 Analyses gratuites : il t’en reste {left} sur {count}. Ensuite, un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.",
+  "@freeLeft": {
+    "placeholders": {
+      "left": { "type": "int" },
+      "count": { "type": "int" },
+      "priceClause": { "type": "String" }
+    }
+  },
+  "freeUsed": "🔒 Tes {count} analyses gratuites sont utilisées. Un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.",
+  "@freeUsed": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "priceClause": { "type": "String" }
+    }
+  },
+  "unlock": "Débloquer",
+
+  "payTitle": "Pour le prix d’un seau de balles",
+  "payLeft": "{count, plural, =1{Il te reste 1 analyse gratuite.} other{Il te reste {count} analyses gratuites.}}",
+  "@payLeft": { "placeholders": { "count": { "type": "int" } } },
+  "payUsed": "Tes {count} analyses gratuites sont utilisées.",
+  "@payUsed": { "placeholders": { "count": { "type": "int" } } },
+  "payBody": "Débloque les analyses vidéo illimitées avec un seul paiement : pas d’abonnement, pas de mauvaise surprise.",
+  "payLaunchLabel": "Prix de lancement",
+  "payBuy": "Débloquer pour {price}",
+  "@payBuy": { "placeholders": { "price": { "type": "String" } } },
+  "payRestore": "Restaurer mes achats",
+  "payLater": "Plus tard",
+  "payClose": "Fermer",
+  "payThanks": "Merci, c’est débloqué !",
+  "payThanksSub": "Analyses vidéo illimitées, pour toujours.",
+  "payContinue": "Continuer",
+
+  "msgBuyUnavailable": "Achat indisponible pour le moment. Vérifie ta connexion et réessaie.",
+  "msgBuyFailed": "Achat impossible.",
+  "msgBuyFailedDetail": "Achat impossible ({detail}).",
+  "@msgBuyFailedDetail": { "placeholders": { "detail": { "type": "String" } } },
+  "msgRestoreFailed": "Restauration impossible ({detail}).",
+  "@msgRestoreFailed": { "placeholders": { "detail": { "type": "String" } } },
+  "msgNothingToRestore": "Aucun achat à restaurer sur ce compte.",
+  "msgStoreUnavailable": "Store indisponible pour le moment."
+}

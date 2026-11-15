@@ -38,6 +38,16 @@ C'est le portage de la version web, avec les mêmes algorithmes de détection. C
 ### Historique du tempo
 Chaque vidéo analysée ajoute un point (ratio montée : descente) à l'historique du mode en cours, grand jeu ou putting (`lib/history_card.dart`). Le graphique montre la cible (3 ou 2) et les zones « Trop lent » (au-dessus), « Dans la cible » (± 0,15) et « Trop rapide » (en dessous). Retoucher les repères met à jour le point de la même vidéo. Les données sont stockées sur l'appareil avec `shared_preferences` (pas de base de données), 200 points maximum par mode, avec un bouton pour effacer.
 
+### Langues
+L'app existe en **français, anglais et espagnol**. Elle suit la langue de l'appareil (première langue préférée que l'app traduit, sinon l'anglais). Les nombres et les dates suivent la langue : `0,81 s` en français et en espagnol, `0.81 s` en anglais, `14 mars` / `Mar 14` / `14 mar`.
+
+- Les textes sont dans `lib/l10n/app_fr.arb` (modèle), `app_en.arb` et `app_es.arb`. Le code Dart (`lib/l10n/app_localizations*.dart`, généré d'après `l10n.yaml`) est versionné et régénéré à chaque `flutter pub get` : ne pas le modifier à la main.
+- **Modifier un texte** : le changer dans les trois fichiers. Les messages avec variables (`{up}`, `{price}`…) doivent garder les mêmes variables dans les trois langues. `test/l10n_test.dart` échoue si une clé manque ou si une variable change.
+- **Ajouter une langue** : copier `app_en.arb` en `app_xx.arb`, traduire, puis ajouter `xx` dans `CFBundleLocalizations` (`tool/bootstrap.sh`) et dans la liste des langues de `test/l10n_test.dart`.
+- Pas de texte en dur dans les écrans : tout passe par `AppLocalizations.of(context)`. Les textes qui dépendent d'un état (message de statut, conseil) sont construits à l'affichage, donc ils suivent un changement de langue en cours d'usage.
+- iOS : `CFBundleLocalizations` est réglé par `tool/bootstrap.sh` (sans lui, iOS ne transmet pas l'espagnol à Flutter). Les textes des autorisations caméra / micro / photos sont en anglais (langue de repli) ; les traduire demande d'ajouter des `InfoPlist.strings` dans Xcode.
+- Fiche des stores (titre, description, captures d'écran) : à renseigner pour chaque langue dans App Store Connect et la Google Play Console, ce n'est pas dans le code.
+
 ### Gratuité et achat intégré
 - Les **3 premières analyses vidéo sont gratuites**. Une analyse compte quand une vidéo est analysée avec succès : un échec, une retouche des repères ou un changement de mode (grand jeu ↔ putting) sur la même vidéo ne comptent pas.
 - Ensuite, un **achat unique** (pas d'abonnement) débloque les analyses à vie. Argument : « Pour le prix d'un seau de balles ». Le métronome et l'historique restent gratuits.
@@ -46,7 +56,23 @@ Chaque vidéo analysée ajoute un point (ratio montée : descente) à l'historiq
 
 **Mise en place dans les stores (à faire une fois)**
 1. Créer un produit **non consommable** d'identifiant `rhythmix_golf_unlock` (`kProductId`) dans App Store Connect (*Achats intégrés*) et dans la Google Play Console (*Produits intégrés à l'application*).
-2. Prix de lancement : **2,99 €**. Pour passer à **4,99 €** plus tard : changer le prix dans les deux stores, puis mettre `kLaunchOffer = false` dans `lib/purchase.dart` (retire la mention « prix de lancement » et le prix barré). Le prix affiché dans l'app est toujours celui renvoyé par le store.
+2. **Prix par pays** : ils se règlent dans les stores, pays par pays. L'app affiche toujours celui que le store renvoie, dans la devise du compte (`2,99 €`, `$2.99`, `£2.99`…). Avant la réponse du store (ou s'il est indisponible), elle n'annonce aucun prix.
+   - Prix à régler dans les stores (lancement → normal) :
+
+     | Marché | Lancement → normal |
+     |---|---|
+     | Zone euro | 2,99 → 4,99 € |
+     | États-Unis | 2,99 → 4,99 $ |
+     | Royaume-Uni | 2,99 → 4,99 £ |
+     | Canada | 3,99 → 6,99 CAD |
+     | Australie | 4,49 → 7,99 AUD |
+     | Suisse | 2,90 → 4,90 CHF |
+     | Japon | 480 → 800 ¥ |
+     | Corée du Sud | 4 400 → 6 900 ₩ (≈, au point de prix le plus proche) |
+     | Brésil | 14,90 → 24,90 R$ |
+     | Mexique | 59 → 99 MXN (≈) |
+   - Passage au prix normal : changer le prix dans les deux stores, **c'est tout**. L'app compare le prix du store au prix normal de sa devise (`kRegularPrices`, `lib/purchase.dart`) : en dessous, elle écrit « 2,99 € en prix de lancement, puis 4,99 € » et barre l'ancien prix dans la fenêtre d'achat ; à 4,99, la mention disparaît d'elle-même, même dans les versions déjà installées.
+   - Autre devise : régler le prix dans les stores, puis ajouter une ligne à `kRegularPrices` (`'SEK': 49`) pour avoir la mention de lancement. Sans ligne, l'app affiche simplement le prix du store. Si le prix du store n'est pas exactement celui du tableau (point de prix voisin), corriger la ligne : la mention n'apparaît que si le prix du store est inférieur au prix normal.
 3. iOS : ajouter la capacité **In-App Purchase** dans Xcode (*Signing & Capabilities*). Android : l'app doit être publiée au moins en test interne pour que les achats fonctionnent (les achats sont impossibles avec l'APK installé à la main).
 4. Tester avec un compte *Sandbox* (Apple) ou un testeur de licence (Google).
 
@@ -61,8 +87,11 @@ lib/
   metronome.dart       génération du WAV d'un cycle + lecture en boucle (just_audio)
   metronome_card.dart  interface du métronome
   video_card.dart      interface d'analyse : aperçu, bande d'images, repères, résultat
-  purchase.dart        3 analyses gratuites + achat intégré unique
+  purchase.dart        3 analyses gratuites + achat intégré unique, prix normal par devise
   paywall.dart         encadré « analyses gratuites » et fenêtre d'achat
+  format.dart          nombres, dates et prix selon la langue
+  texts.dart           noms des repères et verdicts du tempo, selon la langue
+  l10n/                textes : app_fr.arb (modèle), app_en.arb, app_es.arb
   strip.dart           dessin de la bande d'images
   detection.dart       algorithmes de détection (Dart pur)
   native.dart          appels au code natif
@@ -115,7 +144,7 @@ flutter test                                   # tests unitaires et d'interface 
 flutter test integration_test -d <appareil>    # sur simulateur iOS / émulateur Android / téléphone
 ```
 
-- `test/` : détection (parité exacte avec le site), réglages et historique, gratuité et achat intégré (faux App Store / Google Play), son du métronome (WAV), interface complète, analyse vidéo avec un faux décodeur natif.
+- `test/` : détection (parité exacte avec le site), réglages et historique, gratuité et achat intégré (faux App Store / Google Play, prix de lancement par devise), son du métronome (WAV), interface complète, analyse vidéo avec un faux décodeur natif, langues (`l10n_test.dart` : cohérence des .arb, choix de la langue, rendu en anglais et en espagnol). Les tests d'interface simulent un appareil en français, sauf `pumpApp(t, locale: …)`.
 - `integration_test/` : décodage natif d'une vraie vidéo de swing (H.264 + AAC), son réel du métronome, analyse de bout en bout. La vidéo est dans `integration_test/swing_video.g.dart` : elle n'est pas embarquée dans l'app publiée.
 - Pour les tests, `AppState` accepte un faux métronome et un faux service d'achat (`AppState(metronome: …, purchase: …)`).
 

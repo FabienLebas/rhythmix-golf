@@ -9,6 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Langues : français, anglais, espagnol (textes dans lib/l10n/*.arb)
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   just_audio: ">=0.9.40 <0.11.0"
   audio_session: ">=0.1.21 <0.3.0"
   path_provider: ^2.1.4
@@ -58,5 +62,7 @@ flutter_native_splash:
 
 flutter:
   uses-material-design: true
+  # Génère lib/l10n/app_localizations*.dart à partir des fichiers .arb
+  generate: true
   assets:
     - assets/logo_full.png

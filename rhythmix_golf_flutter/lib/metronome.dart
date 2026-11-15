@@ -108,14 +108,15 @@ class Metronome {
     await _player.stop();
   }
 
-  /// Étiquette du temps en cours (pour l'affichage), ou null à l'arrêt.
-  String? label() {
+  /// Temps en cours (pour l'affichage) : 0 départ, 1 sommet, 2 impact ;
+  /// null à l'arrêt. Le texte est choisi par l'interface, selon la langue.
+  int? beat() {
     if (!running || !_player.playing || _cycle <= 0) return null;
     final p = _player.position.inMicroseconds / 1e6;
     if (p < _lead) return null;
     final t = (p - _lead) % _cycle;
-    if (t < _b) return 'Départ';
-    if (t < _b + _d) return 'Sommet';
-    return 'Impact';
+    if (t < _b) return 0;
+    if (t < _b + _d) return 1;
+    return 2;
   }
 }
