@@ -1,4 +1,4 @@
-package com.rhythmix.rhythmix_golf
+package com.rhythmix.golf
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -101,6 +101,11 @@ flutter build apk --release     # APK Android
 flutter build ipa               # iOS signé (compte Apple Developer configuré dans Xcode)
 ```
 
+### Publier sur les stores (identifiant `com.rhythmix.golf`)
+- Les dossiers `android/` et `ios/` sont commités : l'identifiant `com.rhythmix.golf` y est déjà réglé (Android et iOS). Ne les régénère pas avec `tool/bootstrap.sh` après les avoir supprimés, l'identifiant redeviendrait celui par défaut.
+- **Clé de signature Android** : crée-la une fois avec `keytool` (`-alias upload`), puis écris `android/key.properties` (non commité) avec `storePassword`, `keyPassword`, `keyAlias`, `storeFile`. Sans ce fichier, le build release utilise la clé debug.
+- **CI** : le job Android produit aussi `app-release.aab` (artefact `rhythmix-golf-android-aab`). Pour qu'il soit signé, ajoute les secrets du dépôt `ANDROID_KEYSTORE_BASE64` (le `.jks` encodé : `base64 -w0 upload.jks`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` et `ANDROID_KEY_PASSWORD`.
+
 ### Installer sur iPhone
 Apple impose une signature :
 - **depuis un Mac** : ouvre `ios/Runner.xcworkspace` dans Xcode, choisis ton équipe (*Signing & Capabilities*), branche l'iPhone, puis `flutter run --release` ;
