@@ -1,11 +1,12 @@
 name: Tests de non-régression
 
-# Sur chaque branche et chaque pull request. Sur main, ce workflow est appelé
-# par « Compilation Android et iOS » (build.yml) : l'APK et l'app iOS ne sont
-# compilés que si tous les tests passent.
+# Sur chaque pull request (et à la demande, onglet Actions, pour une branche
+# sans PR). Pas de déclencheur « push » sur les branches : avec une PR ouverte,
+# chaque push lançait les tests deux fois (push + pull_request), ce qui doublait
+# les minutes macOS. Sur main, ce workflow est appelé par « Compilation Android
+# et iOS » (build.yml) : l'APK et l'app iOS ne sont compilés que si tous les
+# tests passent.
 on:
-  push:
-    branches-ignore: [main]
   pull_request:
   workflow_dispatch:
   workflow_call:
@@ -130,5 +131,38 @@ jobs:
           echo "Simulateur : $UDID"
           xcrun simctl boot "$UDID"
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+      # Il arrive que l'app se lance sur le simulateur sans que les tests
+      # démarrent jamais (Flutter n'arrive pas à s'y connecter) : l'étape
+      # restait alors bloquée jusqu'à la limite de 45 min du job. On coupe donc
+      # chaque essai au bout de 15 min (un passage normal prend ~9 min) et,
+      # seulement dans ce cas, on redémarre le simulateur et on réessaie une
+      # fois. Un vrai échec de test n'est pas relancé.
       - name: Tests sur simulateur iOS
-        run: flutter test integration_test -d "$SIM_UDID" --reporter expanded
+        run: |
+          LIMITE=900  # secondes par essai
+          for essai in 1 2; do
+            rm -f "$RUNNER_TEMP/bloque"
+            flutter test integration_test -d "$SIM_UDID" --reporter expanded &
+            pid=$!
+            ( sleep "$LIMITE"
+              touch "$RUNNER_TEMP/bloque"
+              echo "::warning::Essai $essai bloqué après $((LIMITE / 60)) min : arrêt des tests."
+              pkill -TERM -P "$pid" 2>/dev/null; kill -TERM "$pid" 2>/dev/null
+              sleep 15
+              pkill -KILL -P "$pid" 2>/dev/null; kill -KILL "$pid" 2>/dev/null ) &
+            garde=$!
+            code=0
+            wait "$pid" || code=$?
+            pkill -P "$garde" 2>/dev/null || true
+            kill "$garde" 2>/dev/null || true
+            if [ ! -f "$RUNNER_TEMP/bloque" ]; then
+              exit "$code"  # terminé à temps : succès ou vrai échec
+            fi
+            if [ "$essai" = 1 ]; then
+              echo "Redémarrage du simulateur avant le second essai"
+              xcrun simctl shutdown "$SIM_UDID" || true
+              xcrun simctl boot "$SIM_UDID"
+            fi
+          done
+          echo "::error::Les tests iOS sont restés bloqués deux fois de suite."
+          exit 1
