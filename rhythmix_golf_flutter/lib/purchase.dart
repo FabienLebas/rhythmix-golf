@@ -17,7 +17,9 @@ const String kProductId = 'rhythmix_golf_unlock';
 /// Les prix eux-mêmes se règlent dans App Store Connect et la Google Play
 /// Console, pays par pays : l'app affiche toujours celui que le store renvoie.
 /// Ce tableau sert seulement à écrire « prix de lancement, puis 4,99 € » et à
-/// barrer l'ancien prix. Prix de lancement actuels : 2,99 € / 2,99 $ / 2,99 £.
+/// barrer l'ancien prix. Prix de lancement correspondants, à régler dans les
+/// stores : 2,99 € / 2,99 $ / 2,99 £ / 3,99 CAD / 4,49 AUD / 2,90 CHF /
+/// 480 JPY / 4 400 KRW / 14,90 BRL / 59 MXN.
 ///
 /// - Pas de ligne pour une devise : l'app affiche le prix du store tel quel,
 ///   sans mention de lancement.
@@ -28,6 +30,13 @@ const Map<String, double> kRegularPrices = {
   'EUR': 4.99,
   'USD': 4.99,
   'GBP': 4.99,
+  'CAD': 6.99,
+  'AUD': 7.99,
+  'CHF': 4.90,
+  'JPY': 800,
+  'KRW': 6900,
+  'BRL': 24.90,
+  'MXN': 99,
 };
 
 /// Problèmes d'achat à signaler à l'utilisateur. Le texte est choisi par

@@ -23,5 +23,9 @@ String fmtTrim(double x, String locale) {
 String fmtDay(DateTime d, String locale) => DateFormat.MMMd(locale).format(d);
 
 /// Prix formaté dans la devise [currency] (code ISO) selon la langue.
-String fmtMoney(double amount, String currency, String locale) =>
-    NumberFormat.simpleCurrency(locale: locale, name: currency).format(amount);
+/// Un montant rond s'écrit sans décimales (« 99 MXN », « 800 ¥ »).
+String fmtMoney(double amount, String currency, String locale) => NumberFormat.simpleCurrency(
+      locale: locale,
+      name: currency,
+      decimalDigits: amount == amount.roundToDouble() ? 0 : null,
+    ).format(amount);

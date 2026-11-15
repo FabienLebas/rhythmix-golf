@@ -57,9 +57,22 @@ L'app existe en **français, anglais et espagnol**. Elle suit la langue de l'app
 **Mise en place dans les stores (à faire une fois)**
 1. Créer un produit **non consommable** d'identifiant `rhythmix_golf_unlock` (`kProductId`) dans App Store Connect (*Achats intégrés*) et dans la Google Play Console (*Produits intégrés à l'application*).
 2. **Prix par pays** : ils se règlent dans les stores, pays par pays. L'app affiche toujours celui que le store renvoie, dans la devise du compte (`2,99 €`, `$2.99`, `£2.99`…). Avant la réponse du store (ou s'il est indisponible), elle n'annonce aucun prix.
-   - Lancement : **2,99 €** (zone euro), **2,99 $** (États-Unis), **2,99 £** (Royaume-Uni). Ensuite : **4,99 €**, **4,99 $**, **4,99 £**.
+   - Prix à régler dans les stores (lancement → normal) :
+
+     | Marché | Lancement → normal |
+     |---|---|
+     | Zone euro | 2,99 → 4,99 € |
+     | États-Unis | 2,99 → 4,99 $ |
+     | Royaume-Uni | 2,99 → 4,99 £ |
+     | Canada | 3,99 → 6,99 CAD |
+     | Australie | 4,49 → 7,99 AUD |
+     | Suisse | 2,90 → 4,90 CHF |
+     | Japon | 480 → 800 ¥ |
+     | Corée du Sud | 4 400 → 6 900 ₩ (≈, au point de prix le plus proche) |
+     | Brésil | 14,90 → 24,90 R$ |
+     | Mexique | 59 → 99 MXN (≈) |
    - Passage au prix normal : changer le prix dans les deux stores, **c'est tout**. L'app compare le prix du store au prix normal de sa devise (`kRegularPrices`, `lib/purchase.dart`) : en dessous, elle écrit « 2,99 € en prix de lancement, puis 4,99 € » et barre l'ancien prix dans la fenêtre d'achat ; à 4,99, la mention disparaît d'elle-même, même dans les versions déjà installées.
-   - Autre devise (Canada, Australie, Suisse, Japon…) : régler le prix dans les stores, puis ajouter une ligne à `kRegularPrices` (`'CAD': 6.99`) pour avoir la mention de lancement. Sans ligne, l'app affiche simplement le prix du store.
+   - Autre devise : régler le prix dans les stores, puis ajouter une ligne à `kRegularPrices` (`'SEK': 49`) pour avoir la mention de lancement. Sans ligne, l'app affiche simplement le prix du store. Si le prix du store n'est pas exactement celui du tableau (point de prix voisin), corriger la ligne : la mention n'apparaît que si le prix du store est inférieur au prix normal.
 3. iOS : ajouter la capacité **In-App Purchase** dans Xcode (*Signing & Capabilities*). Android : l'app doit être publiée au moins en test interne pour que les achats fonctionnent (les achats sont impossibles avec l'APK installé à la main).
 4. Tester avec un compte *Sandbox* (Apple) ou un testeur de licence (Google).
 

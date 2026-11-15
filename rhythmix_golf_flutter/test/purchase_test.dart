@@ -24,7 +24,10 @@ void main() {
   test('constantes de l’offre inchangées', () {
     expect(kFreeAnalyses, 3);
     expect(kProductId, 'rhythmix_golf_unlock');
-    expect(kRegularPrices, {'EUR': 4.99, 'USD': 4.99, 'GBP': 4.99});
+    expect(kRegularPrices, {
+      'EUR': 4.99, 'USD': 4.99, 'GBP': 4.99,
+      'CAD': 6.99, 'AUD': 7.99, 'CHF': 4.90, 'JPY': 800, 'KRW': 6900, 'BRL': 24.90, 'MXN': 99,
+    });
   });
 
   group('gratuité', () {
@@ -95,8 +98,20 @@ void main() {
       }
     });
 
+    test('autres marchés : prix de lancement puis prix normal', () async {
+      const launch = {'CAD': 3.99, 'AUD': 4.49, 'CHF': 2.90, 'JPY': 480.0, 'KRW': 4400.0, 'BRL': 14.90, 'MXN': 59.0};
+      const regular = {'CAD': 6.99, 'AUD': 7.99, 'CHF': 4.90, 'JPY': 800.0, 'KRW': 6900.0, 'BRL': 24.90, 'MXN': 99.0};
+      for (final c in launch.keys) {
+        final p = await withProduct(launch[c]!, c);
+        expect(p.isLaunchPrice, isTrue, reason: '$c lancement');
+        expect(p.regularPrice, regular[c], reason: c);
+        final n = await withProduct(regular[c]!, c);
+        expect(n.isLaunchPrice, isFalse, reason: '$c prix normal');
+      }
+    });
+
     test('devise sans prix normal connu : prix du store seul, pas de mention', () async {
-      final p = await withProduct(3.99, 'CAD');
+      final p = await withProduct(3.99, 'SEK');
       expect(p.regularPrice, isNull);
       expect(p.isLaunchPrice, isFalse);
       expect(p.price, '2,99 €', reason: 'le prix affiché reste celui du store');

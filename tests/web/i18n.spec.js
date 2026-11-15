@@ -122,13 +122,37 @@ test.describe('espagnol (es-ES)', () => {
   });
 });
 
+const MARKETS = [
+  // [langue du navigateur, texte attendu dans l'encadré de gratuité]
+  ['en-CA', 'CA$3.99 launch price, then CA$6.99'],
+  ['fr-CA', `3,99${NB}CA$ en prix de lancement, puis 6,99${NB}CA$`],
+  ['en-AU', 'A$4.49 launch price, then A$7.99'],
+  ['fr-CH', `2,90${NB}CHF en prix de lancement, puis 4,90${NB}CHF`],
+  ['en-CH', `CHF${NB}2.90 launch price, then CHF${NB}4.90`],
+  ['es-MX', `59${NB}MX$ de precio de lanzamiento, luego 99${NB}MX$`],
+  ['ja-JP', '¥480 launch price, then ¥800'],
+  ['ko-KR', '₩4,400 launch price, then ₩6,900'],
+  ['pt-BR', 'R$14.90 launch price, then R$24.90'],
+  ['es-ES', `2,99${NB}€ de precio de lanzamiento, luego 4,99${NB}€`],
+];
+for (const [locale, text] of MARKETS) {
+  test.describe(`marché ${locale}`, () => {
+    test.use({ locale });
+    test('prix de lancement puis prix normal dans la devise du pays', async ({ page }) => {
+      await openApp(page);
+      await expect(page.locator('#free')).toContainText(text);
+    });
+  });
+}
+
 test.describe('pays sans prix annoncé', () => {
-  test.use({ locale: 'es-MX' });
-  test('espagnol du Mexique : textes en espagnol, aucun prix (affiché par le store)', async ({ page }) => {
+  test.use({ locale: 'sv-SE' });
+  test('suédois : anglais, aucun prix (affiché par le store)', async ({ page }) => {
     await openApp(page);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('#free')).toHaveText(
-      '🎁 Los primeros 3 análisis de video son gratis. Después, consigue Rhythmix Golf en la app móvil, '
-      + 'por el precio de un cubo de bolas, en un solo pago.');
+      '🎁 The first 3 video analyses are free. After that, get Rhythmix Golf in the mobile app, '
+      + 'for the price of a bucket of range balls, as a single payment.');
   });
 });
 

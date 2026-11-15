@@ -248,10 +248,20 @@ void main() {
       expect(rich.where((s) => s.contains('Launch price')), isEmpty);
     });
 
-    testWidgets('devise sans prix normal connu (CAD) : prix du store seul', (t) async {
+    testWidgets('Canada, Japon : lancement puis prix normal dans la devise du store', (t) async {
       installFakeStore(products: [fakeProduct(price: r'CA$3.99', raw: 3.99, currency: 'CAD')]);
       await pumpApp(t, locale: en);
-      expect(find.textContaining('a bucket of range balls: CA\$3.99$enMore'), findsOneWidget);
+      expect(find.textContaining('a bucket of range balls: CA\$3.99 launch price, then ${fmtMoney(6.99, 'CAD', 'en')}$enMore'),
+          findsOneWidget);
+      installFakeStore(products: [fakeProduct(price: '¥480', raw: 480, currency: 'JPY')]);
+      await pumpApp(t, locale: en);
+      expect(find.textContaining('¥480 launch price, then ¥800$enMore'), findsOneWidget);
+    });
+
+    testWidgets('devise sans prix normal connu (SEK) : prix du store seul', (t) async {
+      installFakeStore(products: [fakeProduct(price: '29 kr', raw: 29, currency: 'SEK')]);
+      await pumpApp(t, locale: en);
+      expect(find.textContaining('a bucket of range balls: 29 kr$enMore'), findsOneWidget);
       expect(find.textContaining('launch price'), findsNothing);
     });
 

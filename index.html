@@ -305,6 +305,8 @@ var LANG="en",REGION="";
     p=String(prefs[i]).split("-");
     if(I18N[p[0].toLowerCase()]){LANG=p[0].toLowerCase();REGION=(p[1]||"").toUpperCase();return}
   }
+  /* Langue non traduite (japonais, portugais…) : textes en anglais, mais prix du pays */
+  p=String(prefs[0]).split("-");REGION=(p[1]||"").toUpperCase();
 })();
 document.documentElement.lang=LANG;
 function tr(k,v){
@@ -313,25 +315,28 @@ function tr(k,v){
 }
 /* Séparateur décimal : virgule en français et en espagnol, point en anglais. */
 function dec(s){return LANG==="en"?String(s):String(s).replace(".",",")}
-/* Prix du lancement (2,99) puis normal (4,99), dans la devise du pays de la langue du navigateur :
-   zone euro, États-Unis, Royaume-Uni. Autre pays : pas de prix annoncé (il est affiché par le store). */
+/* Prix de lancement puis prix normal, dans la devise du pays de la langue du navigateur.
+   Même grille que les stores de l'app (README). Pays absent de la grille : pas de prix annoncé. */
+var PRICES={EUR:[2.99,4.99],USD:[2.99,4.99],GBP:[2.99,4.99],CAD:[3.99,6.99],AUD:[4.49,7.99],CHF:[2.9,4.9],JPY:[480,800],KRW:[4400,6900],BRL:[14.9,24.9],MXN:[59,99]};
+var SYM={EUR:"€",USD:"$",GBP:"£",CAD:"CA$",AUD:"A$",CHF:"CHF",JPY:"¥",KRW:"₩",BRL:"R$",MXN:"MX$"};
+var REG_CUR={GB:"GBP",US:"USD",CA:"CAD",AU:"AUD",CH:"CHF",JP:"JPY",KR:"KRW",BR:"BRL",MX:"MXN"};
 var EURO=" AT BE BG CY DE EE ES FI FR GR HR IE IT LT LU LV MT NL PT SI SK MC SM VA AD ";
 function currency(){
   if(!REGION)return LANG==="en"?"USD":"EUR";
-  if(REGION==="GB")return "GBP";
-  if(REGION==="US")return "USD";
+  if(REG_CUR[REGION])return REG_CUR[REGION];
   return EURO.indexOf(" "+REGION+" ")>=0?"EUR":null;
 }
 function money(cur,v){
-  var n=dec(v.toFixed(2));
-  if(LANG==="en")return {EUR:"€",USD:"$",GBP:"£"}[cur]+n;
-  return n+" "+{EUR:"€",USD:"$",GBP:"£"}[cur];
+  var whole=v===Math.round(v),n=whole?String(Math.round(v)):dec(v.toFixed(2));
+  if(whole&&n.length>3)n=n.slice(0,-3)+(LANG==="en"?",":LANG==="fr"?"\u202f":"")+n.slice(-3);
+  if(LANG==="en")return SYM[cur]+(cur==="CHF"?"\u00a0":"")+n;
+  return n+"\u00a0"+SYM[cur];
 }
 /* Fin du lancement : mettre LAUNCH_OFFER à false (le site n'affiche plus que 4,99). */
 var LAUNCH_OFFER=true;
 function priceClause(){
   var c=currency();if(!c)return "";
-  return tr("priceClause",{p:LAUNCH_OFFER?tr("priceLaunch",{p:money(c,2.99),r:money(c,4.99)}):money(c,4.99)});
+  return tr("priceClause",{p:LAUNCH_OFFER?tr("priceLaunch",{p:money(c,PRICES[c][0]),r:money(c,PRICES[c][1])}):money(c,PRICES[c][1])});
 }
 /* Textes fixes de la page (attributs data-i18n / data-i18n-html) */
 function applyStatic(){
