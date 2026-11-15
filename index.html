@@ -473,14 +473,18 @@ async function analyze(){
     var LUM=[],RI=[],j,drops=0,steps=0,cw0=vid.videoWidth,ch0=vid.videoHeight,chain=[],k0;
     while(Math.min(cw0,ch0)/2>=120){cw0=Math.round(cw0/2);ch0=Math.round(ch0/2);steps++;var cc=document.createElement('canvas');cc.width=cw0;cc.height=ch0;chain.push(cc.getContext('2d',{willReadFrequently:true}))}
     AW=cw0;AH=ch0;BIG=[];
+    // image de travail AW x AH : dernier étage de réduction, ou (petite vidéo, rien à réduire) la vidéo elle-même à sa taille
+    var bc=chain.length?chain[chain.length-1]:null;
+    if(!bc){var bcv=document.createElement('canvas');bcv.width=AW;bcv.height=AH;bc=bcv.getContext('2d',{willReadFrequently:true})}
     function grab(){
       var src=vid;
       for(k0=0;k0<chain.length;k0++){chain[k0].drawImage(src,0,0,chain[k0].canvas.width,chain[k0].canvas.height);src=chain[k0].canvas}
+      if(!chain.length)bc.drawImage(vid,0,0,AW,AH);
       var t=document.createElement('canvas');t.width=tw;t.height=th;
       var tc=t.getContext('2d',{willReadFrequently:true});tc.drawImage(src,0,0,tw,th);
       var im=tc.getImageData(0,0,tw,th).data,l=new Float32Array(tw*th),k;
       for(k=0;k<l.length;k++)l[k]=0.3*im[k*4]+0.59*im[k*4+1]+0.11*im[k*4+2];
-      var bd=chain.length?chain[chain.length-1].getImageData(0,0,AW,AH).data:tc.getImageData(0,0,tw,th).data,bl8=new Uint8Array(AW*AH);
+      var bd=bc.getImageData(0,0,AW,AH).data,bl8=new Uint8Array(AW*AH);
       for(k=0;k<bl8.length;k++)bl8[k]=0.3*bd[k*4]+0.59*bd[k*4+1]+0.11*bd[k*4+2];
       return {t:t,l:l,b:bl8};
     }

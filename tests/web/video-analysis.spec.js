@@ -159,3 +159,36 @@ test('vidéo VP9 (autre codec, même conteneur MP4) : mêmes repères', async ({
   vp9.forEach((v, i) => expect(Math.abs(v - h264[i])).toBeLessThanOrEqual(1));
   await app.noErrors();
 });
+
+test('petite vidéo (180 × 320, rien à réduire) : images de travail pleine taille, même sommet', async ({ page }, info) => {
+  test.skip(info.project.name !== 'ordinateur', 'une fois suffit');
+  const app = await openApp(page);
+  // Référence : 270 × 480 (images de travail réduites une fois, 135 × 240)
+  await analyseSwing(page);
+  const ref = await page.evaluate(() => ({ M: M.slice(), hip: hipTop(M[2]) }));
+  expect(ref.hip, 'sommet par les hanches, vidéo 270 × 480').not.toBeNull();
+
+  await page.setInputFiles('#vf', path.join(FIXTURES, 'swing_60fps_small.mp4'));
+  await expect(page.locator('#vres')).toContainText('Analyse', { timeout: 20_000 });
+  await expect(page.locator('#vhint')).toContainText('Détection terminée', { timeout: 120_000 });
+  await expect(page.locator('#vmeta')).toHaveText('Vidéo : 180 × 320 · 60 images/s · 3,0 s');
+  const small = await page.evaluate(() => {
+    // chaque image de travail doit être entièrement remplie (AW × AH = taille de la vidéo)
+    let filled = true;
+    for (const b of BIG) {
+      let zeros = 0;
+      for (let k = 0; k < b.length; k++) if (!b[k]) zeros++;
+      if (b.length !== AW * AH || zeros > b.length / 100) { filled = false; break; }
+    }
+    return { AW, AH, n, big: BIG.length, filled, M: M.slice(), hip: hipTop(M[2]) };
+  });
+  expect([small.AW, small.AH]).toEqual([180, 320]);
+  expect(small.big).toBe(small.n);
+  expect(small.filled, 'images de travail entièrement remplies').toBe(true);
+  expect(small.hip, 'sommet par les hanches, vidéo 180 × 320').not.toBeNull();
+  expect(Math.abs(small.hip - ref.hip)).toBeLessThanOrEqual(1);
+  expect(Math.abs(small.hip - TRUTH.top)).toBeLessThanOrEqual(TOL);
+  await expect(page.locator('#vhint')).toContainText('sommet repéré au départ des hanches');
+  small.M.forEach((v, i) => expect(Math.abs(v - ref.M[i]), `repère ${i}`).toBeLessThanOrEqual(1));
+  await app.noErrors();
+});

@@ -8,6 +8,8 @@ de la balle à l'impact. Repères exacts :
 Sorties (dans tests/fixtures/) :
   swing_60fps.mp4       H.264 + AAC : lu par iOS (AVFoundation), Android (MediaCodec)
   swing_60fps_vp9.mp4   VP9 + Opus  : lu par le Chromium open source des tests web
+  swing_60fps_small.mp4 le même swing en 180 x 320 px (petit côté < 240 px :
+                        images de travail non réduites), H.264 + AAC
   ../../rhythmix_golf_flutter/integration_test/swing_video.g.dart
                         la vidéo H.264 en base64, embarquée uniquement dans les
                         tests sur appareil (rien n'est ajouté à l'app publiée)
@@ -81,11 +83,16 @@ _raw = rng.uniform(0, 1, 180 + 64)
 BELT = np.convolve(_raw, np.ones(5) / 5, mode="same") * 140 + 60
 UW, UH = W / SCALE, H / SCALE
 
-yy, xx = np.mgrid[0:H, 0:W].astype(np.float64) / SCALE
 CX, SHOULDER_Y = UW / 2, 120.0
 
 
-def seg_coverage(x0, y0, x1, y1, width):
+def grid(scale):
+    """Coordonnées (en unités de dessin) de chaque pixel d'une image agrandie x scale."""
+    yy, xx = np.mgrid[0:round(UH * scale), 0:round(UW * scale)].astype(np.float64) / scale
+    return xx, yy
+
+
+def seg_coverage(xx, yy, x0, y0, x1, y1, width):
     dx, dy = x1 - x0, y1 - y0
     L2 = dx * dx + dy * dy
     t = np.clip(((xx - x0) * dx + (yy - y0) * dy) / L2, 0, 1)
@@ -93,8 +100,8 @@ def seg_coverage(x0, y0, x1, y1, width):
     return np.clip(width / 2 + 0.5 - d, 0, 1)
 
 
-def frame(i):
-    img = np.full((H, W), 112.0)
+def frame(i, xx, yy):
+    img = np.full(xx.shape, 112.0)
     img += (yy / UH) * 25  # léger dégradé du fond
     # jambes
     img = np.where((yy > 205) & (yy < 300) & (np.abs(xx - CX) > 8) & (np.abs(xx - CX) < 26), 70, img)
@@ -114,8 +121,8 @@ def frame(i):
     a = club_angle(i)
     hx, hy = CX + 50 * math.sin(a), SHOULDER_Y + 50 * math.cos(a)
     cx, cy = CX + 150 * math.sin(a), SHOULDER_Y + 150 * math.cos(a)
-    arms = seg_coverage(CX + tor, SHOULDER_Y, hx, hy, 9)
-    club = seg_coverage(hx, hy, cx, cy, 3)
+    arms = seg_coverage(xx, yy, CX + tor, SHOULDER_Y, hx, hy, 9)
+    club = seg_coverage(xx, yy, hx, hy, cx, cy, 3)
     img = img * (1 - arms) + 160 * arms
     img = img * (1 - club) + 235 * club
     # balle
@@ -133,9 +140,15 @@ def audio():
     return np.clip(a, -1, 1)
 
 
+def rgb_frames(scale):
+    xx, yy = grid(scale)
+    frames = np.stack([frame(i, xx, yy) for i in range(N)])
+    return np.repeat(frames[..., None], 3, axis=3)
+
+
 def main():
-    frames = np.stack([frame(i) for i in range(N)])
-    rgb = np.repeat(frames[..., None], 3, axis=3)
+    rgb = rgb_frames(SCALE)
+    small = rgb_frames(1.0)
     with tempfile.TemporaryDirectory() as tmp:
         wav = pathlib.Path(tmp) / "a.wav"
         pcm = (audio() * 32767).astype("<i2")
@@ -145,16 +158,21 @@ def main():
             w.setframerate(SR)
             w.writeframes(pcm.tobytes())
         raw = rgb.tobytes()
-        common = ["ffmpeg", "-y", "-loglevel", "error",
-                  "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-                  "-i", str(wav), "-map", "0:v", "-map", "1:a", "-shortest",
-                  "-fflags", "+bitexact", "-flags:v", "+bitexact", "-flags:a", "+bitexact",
-                  "-map_metadata", "-1"]
-        subprocess.run(common + ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
-                                 "-x264-params", "threads=1", "-g", "60", "-bf", "0",
-                                 "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart",
-                                 str(HERE / "swing_60fps.mp4")], input=raw, check=True)
-        subprocess.run(common + ["-c:v", "libvpx-vp9", "-crf", "20", "-b:v", "0", "-row-mt", "0", "-threads", "1",
+
+        def common(w, h):
+            return ["ffmpeg", "-y", "-loglevel", "error",
+                    "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}", "-r", str(FPS), "-i", "-",
+                    "-i", str(wav), "-map", "0:v", "-map", "1:a", "-shortest",
+                    "-fflags", "+bitexact", "-flags:v", "+bitexact", "-flags:a", "+bitexact",
+                    "-map_metadata", "-1"]
+        h264 = ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+                "-x264-params", "threads=1", "-g", "60", "-bf", "0",
+                "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart"]
+        subprocess.run(common(W, H) + h264 + [str(HERE / "swing_60fps.mp4")], input=raw, check=True)
+        sh, sw = small.shape[1:3]
+        subprocess.run(common(sw, sh) + h264 + [str(HERE / "swing_60fps_small.mp4")],
+                       input=small.tobytes(), check=True)
+        subprocess.run(common(W, H) + ["-c:v", "libvpx-vp9", "-crf", "20", "-b:v", "0", "-row-mt", "0", "-threads", "1",
                                  "-pix_fmt", "yuv420p", "-c:a", "libopus", "-b:a", "96k",
                                  str(HERE / "swing_60fps_vp9.mp4")], input=raw, check=True)
     (HERE / "swing_truth.json").write_text(json.dumps(TRUTH, indent=2) + "\n")
@@ -169,7 +187,7 @@ def main():
             "\n".join(f"    '{l}'" for l in lines) + ";\n")
     FLUTTER_IT.mkdir(parents=True, exist_ok=True)
     (FLUTTER_IT / "swing_video.g.dart").write_text(dart)
-    for f in ("swing_60fps.mp4", "swing_60fps_vp9.mp4"):
+    for f in ("swing_60fps.mp4", "swing_60fps_vp9.mp4", "swing_60fps_small.mp4"):
         print(f, (HERE / f).stat().st_size, "octets")
 
 
