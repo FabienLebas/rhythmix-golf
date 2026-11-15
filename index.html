@@ -347,6 +347,7 @@ function priceClause(){
 function applyStatic(){
   document.querySelectorAll("[data-i18n]").forEach(function(e){e.textContent=tr(e.dataset.i18n)});
   document.querySelectorAll("[data-i18n-html]").forEach(function(e){e.innerHTML=tr(e.dataset.i18nHtml)});
+  var pl=document.querySelector('a[href^="privacy.html"]');if(pl)pl.href="privacy.html?lang="+LANG;
   ["beatStart","beatTop","beatImpact"].forEach(function(k,i){$("k"+(i+1)).textContent=tr(k)+" —"});
 }
 applyStatic();
