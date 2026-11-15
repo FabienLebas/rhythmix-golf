@@ -24,8 +24,7 @@ void main() {
   test('constantes de l’offre inchangées', () {
     expect(kFreeAnalyses, 3);
     expect(kProductId, 'rhythmix_golf_unlock');
-    expect(kLaunchPrice, '2,99 €');
-    expect(kRegularPrice, '4,99 €');
+    expect(kRegularPrices, {'EUR': 4.99, 'USD': 4.99, 'GBP': 4.99});
   });
 
   group('gratuité', () {
@@ -68,11 +67,44 @@ void main() {
       expect(p.price, '3,49 €');
     });
 
-    test('prix de lancement quand le store ne répond pas', () async {
+    test('store muet : pas de prix annoncé (on n’invente rien)', () async {
       final p = await service(installFakeStore(available: false));
       expect(p.storeAvailable, isFalse);
       expect(p.product, isNull);
-      expect(p.price, kLaunchPrice);
+      expect(p.price, isNull);
+      expect(p.isLaunchPrice, isFalse);
+    });
+  });
+
+  group('prix de lancement selon la devise', () {
+    Future<PurchaseService> withProduct(double raw, String currency) async =>
+        service(installFakeStore(products: [fakeProduct(raw: raw, currency: currency)]));
+
+    test('2,99 en euros, dollars et livres : lancement, prix normal 4,99', () async {
+      for (final c in ['EUR', 'USD', 'GBP']) {
+        final p = await withProduct(2.99, c);
+        expect(p.isLaunchPrice, isTrue, reason: c);
+        expect(p.regularPrice, 4.99, reason: c);
+      }
+    });
+
+    test('4,99 : la mention de lancement disparaît toute seule', () async {
+      for (final c in ['EUR', 'USD', 'GBP']) {
+        final p = await withProduct(4.99, c);
+        expect(p.isLaunchPrice, isFalse, reason: c);
+      }
+    });
+
+    test('devise sans prix normal connu : prix du store seul, pas de mention', () async {
+      final p = await withProduct(3.99, 'CAD');
+      expect(p.regularPrice, isNull);
+      expect(p.isLaunchPrice, isFalse);
+      expect(p.price, '2,99 €', reason: 'le prix affiché reste celui du store');
+    });
+
+    test('prix à zéro (donnée absente) : pas de mention de lancement', () async {
+      final p = await withProduct(0, 'EUR');
+      expect(p.isLaunchPrice, isFalse);
     });
   });
 
@@ -123,7 +155,8 @@ void main() {
       await pumpEventQueue();
       expect(p.unlocked, isFalse);
       expect(p.purchasing, isFalse);
-      expect(p.message, 'Achat impossible (carte refusée).');
+      expect(p.message?.issue, PurchaseIssue.buyFailed);
+      expect(p.message?.detail, 'carte refusée');
     });
 
     test('store indisponible : message, pas d’achat lancé', () async {
@@ -131,7 +164,7 @@ void main() {
       final p = await service(store);
       await p.buy();
       expect(store.bought, isEmpty);
-      expect(p.message, contains('Achat indisponible'));
+      expect(p.message?.issue, PurchaseIssue.buyUnavailable);
     });
 
     test('achat d’un autre produit : ignoré mais transaction terminée', () async {
@@ -168,7 +201,7 @@ void main() {
         expect(p.purchasing, isTrue);
         async.elapse(const Duration(seconds: 6));
         expect(p.purchasing, isFalse);
-        expect(p.message, 'Aucun achat à restaurer sur ce compte.');
+        expect(p.message?.issue, PurchaseIssue.nothingToRestore);
         expect(store.restores, 1);
         p.dispose();
       });
@@ -177,7 +210,7 @@ void main() {
     test('store indisponible : message', () async {
       final p = await service(installFakeStore(available: false));
       await p.restore();
-      expect(p.message, 'Store indisponible pour le moment.');
+      expect(p.message?.issue, PurchaseIssue.storeUnavailable);
     });
   });
 }

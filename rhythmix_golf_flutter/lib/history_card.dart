@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
+import 'format.dart';
+import 'l10n/app_localizations.dart';
+import 'texts.dart';
 
 const _kOk = Color(0xFF2F9E5A);
 const _kSlow = Color(0xFFD6453D);
@@ -11,13 +14,6 @@ Color _statusColor(TempoStatus s) => switch (s) {
       TempoStatus.slow => _kSlow,
       TempoStatus.fast => _kFast,
     };
-
-String _date(DateTime d) {
-  const m = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-  return '${d.day} ${m[d.month - 1]}';
-}
-
-String _ratio(double r) => r.toStringAsFixed(1).replaceAll('.', ',');
 
 /// Historique du tempo du mode courant : graphique + dernières analyses.
 class HistoryCard extends StatelessWidget {
@@ -31,25 +27,21 @@ class HistoryCard extends StatelessWidget {
 
   Widget _build(BuildContext context, Widget? _) {
     final t = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final muted = TextStyle(fontSize: 13, color: t.colorScheme.onSurfaceVariant);
     final list = state.history[state.mode]!;
     final target = state.ratioTarget;
-    final grand = state.mode == 'grand';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(grand ? 'Historique · grand jeu' : 'Historique · putting',
+            Text(l.historyTitle(state.mode),
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: t.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 10),
             if (list.isEmpty)
-              Text(
-                'Aucune analyse pour l’instant. Chaque vidéo analysée ajoute un point '
-                '(ratio montée : descente) à ce graphique.',
-                style: muted,
-              )
+              Text(l.historyEmpty, style: muted)
             else ...[
               AspectRatio(
                 aspectRatio: 320 / 190,
@@ -61,17 +53,18 @@ class HistoryCard extends StatelessWidget {
                     grid: t.colorScheme.outlineVariant,
                     line: t.colorScheme.primary,
                     bg: t.colorScheme.surface,
+                    l: l,
                   ),
                 ),
               ),
               const SizedBox(height: 8),
               for (final e in list.reversed.take(8))
-                _row(e, target),
+                _row(l, e, target),
               const SizedBox(height: 4),
               OutlinedButton.icon(
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Effacer cet historique'),
-                onPressed: () => _confirmClear(context, grand),
+                label: Text(l.historyClear),
+                onPressed: () => _confirmClear(context, l),
               ),
             ],
           ],
@@ -80,7 +73,7 @@ class HistoryCard extends StatelessWidget {
     );
   }
 
-  Widget _row(HistoryEntry e, int target) {
+  Widget _row(AppLocalizations l, HistoryEntry e, int target) {
     final st = tempoStatus(e.ratio, target);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -88,21 +81,21 @@ class HistoryCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('${_date(e.time)} · ${_ratio(e.ratio)}:1'),
-          Text(tempoStatusLabel(st), style: TextStyle(fontWeight: FontWeight.w600, color: _statusColor(st))),
+          Text('${fmtDay(e.time, l.localeName)} · ${fmt1(e.ratio, l.localeName)}:1'),
+          Text(tempoStatusLabel(l, st), style: TextStyle(fontWeight: FontWeight.w600, color: _statusColor(st))),
         ],
       ),
     );
   }
 
-  Future<void> _confirmClear(BuildContext context, bool grand) async {
+  Future<void> _confirmClear(BuildContext context, AppLocalizations l) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text('Effacer l’historique ${grand ? 'du grand jeu' : 'du putting'} ?'),
+        title: Text(l.historyClearTitle(state.mode)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Annuler')),
-          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Effacer')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(l.cancel)),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(l.erase)),
         ],
       ),
     );
@@ -118,11 +111,13 @@ class _ChartPainter extends CustomPainter {
     required this.grid,
     required this.line,
     required this.bg,
+    required this.l,
   });
 
   final List<HistoryEntry> entries;
   final int target;
   final Color text, grid, line, bg;
+  final AppLocalizations l;
 
   void _label(Canvas c, String s, Offset o, {TextAlign align = TextAlign.left, Color? color}) {
     final tp = TextPainter(
@@ -149,8 +144,8 @@ class _ChartPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTRB(pl, pt, w - pr, y1), Paint()..color = _kSlow.withValues(alpha: 0.10));
     canvas.drawRect(Rect.fromLTRB(pl, y1, w - pr, y2), Paint()..color = _kOk.withValues(alpha: 0.22));
     canvas.drawRect(Rect.fromLTRB(pl, y2, w - pr, h - pb), Paint()..color = _kFast.withValues(alpha: 0.10));
-    _label(canvas, 'Trop lent', Offset(pl + 4, pt + 8));
-    _label(canvas, 'Trop rapide', Offset(pl + 4, h - pb - 8));
+    _label(canvas, l.tempoSlow, Offset(pl + 4, pt + 8));
+    _label(canvas, l.tempoFast, Offset(pl + 4, h - pb - 8));
 
     final gp = Paint()
       ..color = grid
@@ -168,7 +163,7 @@ class _ChartPainter extends CustomPainter {
     for (var dx = pl; dx < w - pr; dx += 8) {
       canvas.drawLine(Offset(dx, ty), Offset((dx + 5).clamp(pl, w - pr), ty), dash);
     }
-    _label(canvas, 'cible $target:1', Offset(w - pr - 2, ty - 8), align: TextAlign.right, color: _kOk);
+    _label(canvas, l.chartTarget(target), Offset(w - pr - 2, ty - 8), align: TextAlign.right, color: _kOk);
 
     // Courbe et points
     if (entries.length > 1) {
@@ -190,9 +185,9 @@ class _ChartPainter extends CustomPainter {
       canvas.drawCircle(c, 4.5, Paint()..color = _statusColor(tempoStatus(rs[i], target)));
     }
 
-    _label(canvas, _date(entries.first.time), Offset(pl, h - 8));
+    _label(canvas, fmtDay(entries.first.time, l.localeName), Offset(pl, h - 8));
     if (entries.length > 1) {
-      _label(canvas, _date(entries.last.time), Offset(w - pr, h - 8), align: TextAlign.right);
+      _label(canvas, fmtDay(entries.last.time, l.localeName), Offset(w - pr, h - 8), align: TextAlign.right);
     }
   }
 

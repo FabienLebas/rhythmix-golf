@@ -7,14 +7,33 @@ import 'package:image_picker/image_picker.dart';
 
 import 'app_state.dart';
 import 'detection.dart';
+import 'format.dart';
+import 'l10n/app_localizations.dart';
 import 'native.dart';
 import 'paywall.dart';
 import 'strip.dart';
+import 'texts.dart';
 import 'widgets.dart';
 
-const _kIntro = 'Filme ou choisis une vidéo : l’app lit la cadence, analyse chaque image '
-    'et place les trois repères toute seule.';
-const _kCheck = ' Vérifie chaque repère : fais glisser la bande d’images pour trouver la bonne image.';
+/// Texte affiché, construit au moment de l'affichage : si la langue de
+/// l'appareil change pendant qu'il est à l'écran, il suit.
+typedef _Msg = String Function(AppLocalizations l);
+
+String _intro(AppLocalizations l) => l.videoIntro;
+
+enum _Fail { unreadable, tooShort, noMotion }
+
+/// Vidéo inutilisable (illisible, trop courte, sans mouvement).
+class _VideoFail implements Exception {
+  const _VideoFail(this.kind);
+  final _Fail kind;
+
+  String text(AppLocalizations l) => switch (kind) {
+        _Fail.unreadable => l.failUnreadable,
+        _Fail.tooShort => l.failTooShort,
+        _Fail.noMotion => l.failNoMotion,
+      };
+}
 
 class VideoCard extends StatefulWidget {
   const VideoCard({super.key, required this.state});
@@ -40,8 +59,8 @@ class _VideoCardState extends State<VideoCard> {
   double _pos = 0;
   int _cur = -1;
   bool _busy = false;
-  String _hint = _kIntro;
-  String _status = '—';
+  _Msg _hint = _intro;
+  _Msg _status = (_) => '—';
   Uint8List? _pv;
   int _pvWant = -1;
   bool _pvLoading = false;
@@ -92,7 +111,7 @@ class _VideoCardState extends State<VideoCard> {
     try {
       x = await ImagePicker().pickVideo(source: source, maxDuration: const Duration(seconds: 20));
     } catch (e) {
-      setState(() => _status = 'Impossible d’ouvrir ${source == ImageSource.camera ? 'la caméra' : 'la galerie'} ($e).');
+      setState(() => _status = (l) => source == ImageSource.camera ? l.errOpenCamera('$e') : l.errOpenGallery('$e'));
       return;
     }
     if (x == null || !mounted) return;
@@ -114,8 +133,8 @@ class _VideoCardState extends State<VideoCard> {
       _cur = -1;
       _pv = null;
       _busy = true;
-      _hint = _kIntro;
-      _status = 'Chargement…';
+      _hint = _intro;
+      _status = (l) => l.statusLoading;
     });
     for (final im in old) {
       im.dispose();
@@ -123,13 +142,13 @@ class _VideoCardState extends State<VideoCard> {
     try {
       final info = await NativeVideo.info(path);
       if (info.width <= 0 || info.height <= 0 || info.durationMs <= 0) {
-        throw Exception('vidéo illisible');
+        throw const _VideoFail(_Fail.unreadable);
       }
       final fps = (info.fps > 5 && info.fps < 500) ? info.fps : 30.0;
       var n = (info.durationMs / 1000 * fps).floor();
       if (info.frameCount > 0) n = math.min(n, info.frameCount);
       n = math.min(n, 900);
-      if (n < 10) throw Exception('vidéo trop courte');
+      if (n < 10) throw const _VideoFail(_Fail.tooShort);
       // Images de travail : réduites par moitiés successives (petit côté entre 120 et 240 px).
       var aw = info.width, ah = info.height;
       while (math.min(aw, ah) / 2 >= 120) {
@@ -147,7 +166,7 @@ class _VideoCardState extends State<VideoCard> {
         _tw = tw;
         _th = th;
         _cw = math.min(tw, 44).toDouble();
-        _hint = 'Cadence lue dans le fichier : ${_num(fps)} images/s.';
+        _hint = (l) => l.hintFps(fmtTrim(fps, l.localeName));
       });
       _cur = 0;
       _requestPreview();
@@ -175,11 +194,11 @@ class _VideoCardState extends State<VideoCard> {
           _thumbs.add(await rgbaToImage(px, tw, th));
         }
         if (!mounted || job != _job) return;
-        setState(() => _status = 'Analyse… ${(100 * (start + c) / n).round()} % '
-            '(image ${start + c} / $n, ${sw.elapsed.inSeconds} s)');
+        final done = start + c, secs = sw.elapsed.inSeconds;
+        setState(() => _status = (l) => l.statusAnalyzing((100 * done / n).round(), done, n, secs));
       }
       final q = motionCurve(lum);
-      if (q.reduce(math.max) < 0.003) throw Exception('aucun mouvement détecté');
+      if (q.reduce(math.max) < 0.003) throw const _VideoFail(_Fail.noMotion);
       List<double>? env;
       try {
         env = await NativeVideo.audioEnvelope(path);
@@ -190,7 +209,7 @@ class _VideoCardState extends State<VideoCard> {
         _q = q;
         _au = audioImpact(env);
         _busy = false;
-        _status = '—';
+        _status = (_) => '—';
       });
       // Une analyse réussie compte (une seule fois par vidéo : retoucher les repères
       // ou changer de mode ne consomme rien).
@@ -201,7 +220,7 @@ class _VideoCardState extends State<VideoCard> {
       setState(() {
         _busy = false;
         _n = 0;
-        _status = 'Impossible d’analyser cette vidéo ($e).';
+        _status = (l) => l.errAnalyze(e is _VideoFail ? e.text(l) : '$e');
       });
     }
   }
@@ -211,15 +230,19 @@ class _VideoCardState extends State<VideoCard> {
     if (q == null || _n == 0) return;
     final p = kParams[s.mode]!;
     Detection det;
-    String hint;
+    _Msg hint;
     if (!p.hip) {
       det = detectPutt(q: q, fps: _fps);
-      hint = 'Détection terminée (putt : repérage par le mouvement, sans le son).$_kCheck';
+      hint = (l) => '${l.hintPutt} ${l.videoCheck}';
     } else {
       det = detectGrand(q: q, fps: _fps, p: p, au: _au, big: _big, aw: _aw, ah: _ah);
-      hint = 'Détection terminée'
-          '${det.audioT == null ? ' (son non exploitable : impact estimé d’après le mouvement, moins précis)' : ' (impact repéré grâce au bruit de la balle, à ${_num(det.audioT!)} s)'}'
-          '${det.viaHip ? ', sommet repéré au départ des hanches' : ''}.$_kCheck';
+      final at = det.audioT, hip = det.viaHip;
+      hint = (l) {
+        final main = at == null
+            ? (hip ? l.hintGrandMotionHip : l.hintGrandMotion)
+            : (hip ? l.hintGrandBallHip(fmtTrim(at, l.localeName)) : l.hintGrandBall(fmtTrim(at, l.localeName)));
+        return '$main ${l.videoCheck}';
+      };
     }
     setState(() {
       _m = List<int?>.from(det.markers);
@@ -307,52 +330,39 @@ class _VideoCardState extends State<VideoCard> {
 
   // ---------- Interface ----------
 
-  static String _num(double x) {
-    final r = (x * 100).round() / 100;
-    return (r == r.roundToDouble() ? r.toStringAsFixed(0) : r.toString()).replaceAll('.', ',');
-  }
-
-  List<Widget> _results(TextStyle muted) {
+  List<Widget> _results(AppLocalizations l, TextStyle muted) {
+    final loc = l.localeName;
     final md = _measured();
-    if (md == null) return [InfoBox(_status)];
+    if (md == null) return [InfoBox(_status(l))];
     final (b, d) = md;
-    if (b <= 0 || d <= 0) return [const InfoBox('L’ordre doit être : départ, sommet, impact.')];
+    if (b <= 0 || d <= 0) return [InfoBox(l.resultOrder)];
     final r = s.ratioTarget;
     // Tempo cible arrondi comme le métronome : montée = exactement r x descente.
     final dd = math.max(0.01, round2(d)), bb = dd * r, rt = b / d;
-    final nom = s.mode == 'grand' ? 'grand jeu' : 'putting';
-    String adv;
+    final String adv;
     if ((rt - r).abs() <= 0.15) {
-      adv = 'Ton rythme est déjà proche du $r:1, continue comme ça.';
+      adv = l.adviceClose(r);
     } else if (s.mode == 'grand') {
       adv = rt > r
-          ? 'Ta montée est trop lente : accélère-la d’environ ${fmt2(b - bb)} s '
-              '(de ${fmt2(b)} s à ${fmt2(bb)} s) et garde la même descente.'
-          : 'Ta montée est trop rapide : ralentis-la d’environ ${fmt2(bb - b)} s '
-              '(de ${fmt2(b)} s à ${fmt2(bb)} s) et garde la même descente.';
+          ? l.adviceGrandSlow(fmt2(b - bb, loc), fmt2(b, loc), fmt2(bb, loc))
+          : l.adviceGrandFast(fmt2(bb - b, loc), fmt2(b, loc), fmt2(bb, loc));
     } else {
       // Au putting, c'est l'équilibre montée / descente qui compte :
       // on peut corriger d'un côté comme de l'autre.
-      adv = rt > r
-          ? 'Ta montée est trop longue par rapport à ta descente. '
-              'Monte un peu plus franchement (environ ${fmt2(bb)} s au lieu de ${fmt2(b)} s), '
-              'ou laisse le putter redescendre plus tranquillement, sans le pousser vers la balle.'
-          : 'Tu montes trop vite par rapport à ta descente. '
-              'Prends ton temps en montant (environ ${fmt2(bb)} s au lieu de ${fmt2(b)} s), '
-              'ou accélère un peu plus franchement à travers la balle.';
+      adv = rt > r ? l.advicePuttSlow(fmt2(b, loc), fmt2(bb, loc)) : l.advicePuttFast(fmt2(b, loc), fmt2(bb, loc));
     }
     return [
-      InfoBox('Ton rythme : montée ${fmt2(b)} s, descente ${fmt2(d)} s, '
-          'ratio ${rt.toStringAsFixed(1).replaceAll('.', ',')}:1 (swing ${fmt2(b + d)} s).'),
+      InfoBox(l.resultRhythm(fmt2(b, loc), fmt2(d, loc), fmt1(rt, loc), fmt2(b + d, loc))),
       InfoBox(adv),
-      Text('Le métronome est réglé sur ton tempo cible $nom $r:1 : '
-          'montée ${fmt2(bb)} s, descente ${fmt2(dd)} s.', style: muted),
+      Text(l.resultMetroSet(s.mode, r, fmt2(bb, loc), fmt2(dd, loc)), style: muted),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    final loc = l.localeName;
     final muted = TextStyle(fontSize: 13, color: t.colorScheme.onSurfaceVariant);
     final info = _info;
     final ready = _n > 0 && !_busy;
@@ -363,16 +373,11 @@ class _VideoCardState extends State<VideoCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              s.mode == 'grand' ? 'Analyser un grand jeu' : 'Analyser un putt',
+              l.analyzeTitle(s.mode),
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: t.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
-            Text(
-              '📱 Filme-toi de face (face à la caméra), téléphone immobile, golfeur entier dans l’image, '
-              'avec le son : le bruit de la balle sert à repérer l’impact. Pour plus de précision, filme '
-              'à 60 images/s avec l’appareil photo puis choisis la vidéo.',
-              style: muted,
-            ),
+            Text(l.filmTip, style: muted),
             const SizedBox(height: 10),
             FreeTrialBanner(purchase: s.purchase),
             Row(
@@ -381,7 +386,7 @@ class _VideoCardState extends State<VideoCard> {
                   child: FilledButton.tonalIcon(
                     onPressed: _busy ? null : () => _pick(ImageSource.camera),
                     icon: const Icon(Icons.videocam),
-                    label: const Text('Filmer'),
+                    label: Text(l.btnFilm),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -389,7 +394,7 @@ class _VideoCardState extends State<VideoCard> {
                   child: FilledButton.tonalIcon(
                     onPressed: _busy ? null : () => _pick(ImageSource.gallery),
                     icon: const Icon(Icons.video_library),
-                    label: const Text('Choisir une vidéo'),
+                    label: Text(l.btnPick),
                   ),
                 ),
               ],
@@ -419,7 +424,7 @@ class _VideoCardState extends State<VideoCard> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'Image $_cur / ${_n - 1} · ${(_cur / _fps).toStringAsFixed(3)} s',
+                                  l.frameLabel(_cur, _n - 1, fmt3(_cur / _fps, loc)),
                                   style: const TextStyle(color: Colors.white, fontSize: 13),
                                 ),
                               ),
@@ -493,7 +498,7 @@ class _VideoCardState extends State<VideoCard> {
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
                             ),
                             onPressed: ready ? () => _tapMarker(i) : null,
-                            child: _markerLabel(i),
+                            child: _markerLabel(l, i),
                           )
                         : OutlinedButton(
                             style: OutlinedButton.styleFrom(
@@ -502,7 +507,7 @@ class _VideoCardState extends State<VideoCard> {
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
                             ),
                             onPressed: ready ? () => _tapMarker(i) : null,
-                            child: _markerLabel(i),
+                            child: _markerLabel(l, i),
                           ),
                   ),
                   if (i < 2) const SizedBox(width: 6),
@@ -510,35 +515,30 @@ class _VideoCardState extends State<VideoCard> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(_hint, style: muted),
-            ..._results(muted),
+            Text(_hint(l), style: muted),
+            ..._results(l, muted),
             if (info != null && !_busy && _n > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  'Vidéo : ${info.width} × ${info.height} · ${_num(_fps)} images/s · '
-                  '${(info.durationMs / 1000).toStringAsFixed(1).replaceAll('.', ',')} s',
+                  l.videoInfo(info.width, info.height, fmtTrim(_fps, loc), fmt1(info.durationMs / 1000, loc)),
                   style: muted.copyWith(fontSize: 11),
                 ),
               ),
             const SizedBox(height: 8),
-            Text(
-              'Fais glisser la bande d’images comme dans un logiciel de montage. Touche Départ, Sommet '
-              'ou Impact pour le sélectionner : en faisant glisser, le repère suit l’image affichée sous '
-              'le trait blanc. Retouche le même bouton pour le désélectionner.',
-              style: muted,
-            ),
+            Text(l.stripHelp, style: muted),
           ],
         ),
       ),
     );
   }
 
-  Widget _markerLabel(int i) {
+  Widget _markerLabel(AppLocalizations l, int i) {
+    final name = markerName(l, i);
     return FittedBox(
       fit: BoxFit.scaleDown,
       child: Text(
-        _m[i] == null ? '${markerNames[i]} —' : '${markerNames[i]} · ${_m[i]}',
+        _m[i] == null ? '$name —' : '$name · ${_m[i]}',
         maxLines: 1,
       ),
     );

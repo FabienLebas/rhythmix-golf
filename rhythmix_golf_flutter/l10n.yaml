@@ -1,0 +1,8 @@
+# Traductions : un fichier .arb par langue dans lib/l10n/.
+# Le français est le fichier modèle ; l'anglais et l'espagnol doivent avoir
+# exactement les mêmes clés (flutter gen-l10n signale les manques).
+arb-dir: lib/l10n
+template-arb-file: app_fr.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false

@@ -34,7 +34,7 @@ class NativeVideo {
 
   static Future<VideoInfo> info(String path) async {
     final m = await _ch.invokeMapMethod<String, dynamic>('info', {'path': path});
-    if (m == null) throw Exception('informations vidéo indisponibles');
+    if (m == null) throw Exception('video info unavailable');
     num v(String k) => (m[k] as num?) ?? 0;
     return VideoInfo(
       width: v('width').toInt(),
@@ -67,7 +67,7 @@ class NativeVideo {
       'fps': fps.toDouble(),
       'frameCount': frameCount,
     });
-    if (m == null) throw Exception('images indisponibles');
+    if (m == null) throw Exception('frames unavailable');
     return FrameBatch(m['gray'] as Uint8List, m['rgba'] as Uint8List);
   }
 

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:rhythmix_golf/format.dart';
 import 'package:rhythmix_golf/history_card.dart';
 
 import 'helpers.dart';
@@ -90,9 +91,11 @@ void main() {
   group('encadré de gratuité', () {
     testWidgets('aucune analyse utilisée', (t) async {
       await pumpApp(t);
+      // Le prix du store s'affiche tel quel ; le prix normal est formaté par l'app.
       expect(
           find.text('🎁 Les 3 premières analyses vidéo sont gratuites. Ensuite, un seul paiement, '
-              'pour le prix d’un seau de balles : 2,99 € en prix de lancement, puis 4,99 €.'),
+              'pour le prix d’un seau de balles : 2,99 € en prix de lancement, '
+              'puis ${fmtMoney(4.99, 'EUR', 'fr')}.'),
           findsOneWidget);
       expect(find.text('Débloquer'), findsNothing);
     });
@@ -131,7 +134,7 @@ void main() {
       expect(find.text('Restaurer mes achats'), findsOneWidget);
       expect(find.text('Fermer'), findsOneWidget);
       final rich = t.widgetList<RichText>(find.byType(RichText)).map((r) => r.text.toPlainText());
-      expect(rich, contains('Prix de lancement  4,99 €'));
+      expect(rich, contains('Prix de lancement  ${fmtMoney(4.99, 'EUR', 'fr')}'));
     });
 
     testWidgets('acheter : le store est appelé, puis écran de remerciement', (t) async {

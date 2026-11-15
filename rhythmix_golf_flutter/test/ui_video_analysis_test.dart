@@ -94,7 +94,7 @@ void main() {
     expect(s.purchase.used, 1);
     expect(find.textContaining('il t’en reste 2 sur 3'), findsOneWidget);
     expect(find.text('Vidéo : 120 × 216 · 60 images/s · 2,0 s'), findsOneWidget);
-    expect(find.text('Image ${m[0]} / 119 · ${(m[0] / 60).toStringAsFixed(3)} s'), findsOneWidget);
+    expect(find.text('Image ${m[0]} / 119 · ${(m[0] / 60).toStringAsFixed(3).replaceAll('.', ',')} s'), findsOneWidget);
   });
 
   testWidgets('« Filmer » ouvre la caméra', (t) async {
@@ -148,7 +148,7 @@ void main() {
     await t.tap(find.text('+5'));
     await t.pump();
     expect(markerText(t, 'Départ'), 'Départ · ${m[0]}');
-    expect(find.text('Image ${m[0] + 5} / 119 · ${((m[0] + 5) / 60).toStringAsFixed(3)} s'), findsOneWidget);
+    expect(find.text('Image ${m[0] + 5} / 119 · ${((m[0] + 5) / 60).toStringAsFixed(3).replaceAll('.', ',')} s'), findsOneWidget);
   });
 
   testWidgets('changer de mode après l’analyse : nouvelle détection (putt), sans consommer', (t) async {
@@ -201,7 +201,7 @@ void main() {
   testWidgets('vidéo trop courte : message, analyse non décomptée', (t) async {
     final (s, _, _) = await setup(t, video: FakeVideo(frames: 6, start: 1, top: 3, impact: 4));
     await analyse(t);
-    expect(find.text('Impossible d’analyser cette vidéo (Exception: vidéo trop courte).'), findsOneWidget);
+    expect(find.text('Impossible d’analyser cette vidéo (vidéo trop courte).'), findsOneWidget);
     expect(s.purchase.used, 0);
     expect(s.history['grand'], isEmpty);
   });
@@ -209,7 +209,7 @@ void main() {
   testWidgets('vidéo sans mouvement : message, analyse non décomptée', (t) async {
     final (s, _, _) = await setup(t, video: FakeVideo(start: 500, top: 600, impact: 700));
     await analyse(t);
-    expect(find.text('Impossible d’analyser cette vidéo (Exception: aucun mouvement détecté).'), findsOneWidget);
+    expect(find.text('Impossible d’analyser cette vidéo (aucun mouvement détecté).'), findsOneWidget);
     expect(s.purchase.used, 0);
   });
 

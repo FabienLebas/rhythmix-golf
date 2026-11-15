@@ -3,6 +3,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'app_state.dart';
 import 'history_card.dart';
+import 'l10n/app_localizations.dart';
 import 'metronome_card.dart';
 import 'video_card.dart';
 
@@ -19,6 +20,17 @@ Future<void> main() async {
   FlutterNativeSplash.remove();
 }
 
+/// Langue de l'app : la première langue préférée de l'appareil que l'app
+/// traduit (français, anglais, espagnol), sinon l'anglais.
+Locale resolveAppLocale(List<Locale>? preferred, Iterable<Locale> supported) {
+  for (final p in preferred ?? const <Locale>[]) {
+    for (final s in supported) {
+      if (s.languageCode == p.languageCode) return s;
+    }
+  }
+  return const Locale('en');
+}
+
 class RhythmixApp extends StatelessWidget {
   const RhythmixApp({super.key, required this.state});
   final AppState state;
@@ -30,7 +42,10 @@ class RhythmixApp extends StatelessWidget {
       builder: (context, _) {
         final seed = state.mode == 'grand' ? const Color(0xFF2F7D4F) : const Color(0xFF2F6FB0);
         return MaterialApp(
-          title: 'Rhythmix Golf',
+          onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localeListResolutionCallback: resolveAppLocale,
           debugShowCheckedModeBanner: false,
           theme: ThemeData(colorSchemeSeed: seed, brightness: Brightness.light, useMaterial3: true),
           darkTheme: ThemeData(colorSchemeSeed: seed, brightness: Brightness.dark, useMaterial3: true),
@@ -119,11 +134,12 @@ class _ModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Row(
       children: [
-        _btn(context, 'grand', '🏌️ Grand jeu', 'tempo 3 : 1'),
+        _btn(context, 'grand', l.modeGrand, l.modeGrandSub),
         const SizedBox(width: 8),
-        _btn(context, 'putt', '⛳ Putting', 'tempo 2 : 1'),
+        _btn(context, 'putt', l.modePutt, l.modePuttSub),
       ],
     );
   }
