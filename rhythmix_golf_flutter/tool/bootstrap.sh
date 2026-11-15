@@ -14,6 +14,10 @@ if [ ! -f packages/rhythmix_native/pubspec.yaml ]; then
   rm -rf packages/rhythmix_native/example packages/rhythmix_native/test \
          packages/rhythmix_native/android/src/test
 fi
+# Le plugin généré exige le Dart de la machine qui l'a créé (ex. ^3.14.0) :
+# on l'aligne sur l'application pour qu'il marche avec un Flutter un peu plus ancien.
+sed -i.bak -E "s|^  sdk: .*|  sdk: '>=3.5.0 <4.0.0'|" packages/rhythmix_native/pubspec.yaml
+rm -f packages/rhythmix_native/pubspec.yaml.bak
 KT=$(find packages/rhythmix_native/android -name 'RhythmixNativePlugin.kt' | head -n 1)
 SW=$(find packages/rhythmix_native/ios -name 'RhythmixNativePlugin.swift' | head -n 1)
 if [ -z "$KT" ] || [ -z "$SW" ]; then
