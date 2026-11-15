@@ -46,6 +46,8 @@ modes = d.get('UIBackgroundModes', [])
 if 'audio' not in modes:
     modes.append('audio')
 d['UIBackgroundModes'] = modes
+# Pas de chiffrement propriétaire : évite la question « conformité export » à chaque build TestFlight
+d['ITSAppUsesNonExemptEncryption'] = False
 with plist.open('wb') as f:
     plistlib.dump(d, f)
 
