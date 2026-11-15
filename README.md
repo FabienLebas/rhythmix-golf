@@ -73,6 +73,14 @@ Si tu corriges les repères à la main, le point de cette vidéo est mis à jour
 
 ---
 
+## Langues
+
+Le site existe en **français, anglais et espagnol**. Il prend la première langue préférée du navigateur qu'il traduit, sinon l'**anglais**. Nombres et dates suivent la langue (`0,81 s` / `0.81 s`, `14 mars` / `Mar 14` / `14 mar`).
+
+- Les textes sont dans l'objet `I18N` au début du script de `index.html` (blocs `fr`, `en`, `es`, mêmes clés et mêmes `{variables}`). Les textes fixes de la page portent un attribut `data-i18n` (texte) ou `data-i18n-html` (avec gras ou retour à la ligne).
+- Les prix de la phrase « analyses gratuites » suivent le pays de la langue du navigateur : zone euro → 2,99 € puis 4,99 €, États-Unis (ou `en` seul) → 2,99 $ puis 4,99 $, Royaume-Uni → 2,99 £ puis 4,99 £. Autre pays : aucun prix (c'est le store de l'app qui l'affiche). Fin du lancement : `LAUNCH_OFFER = false`.
+- Les tests (`tests/web/i18n.spec.js`) changent la langue du navigateur ; les autres tests tournent en `fr-FR`.
+
 ## Comment fonctionne la détection
 
 Tout se passe **dans le navigateur** : aucune vidéo n'est envoyée sur un serveur.
