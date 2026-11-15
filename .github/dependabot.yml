@@ -14,6 +14,16 @@ updates:
       dart-mineures:
         update-types: [minor, patch]
 
+  # Outils de test du site web (package.json + package-lock.json)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      npm:
+        patterns: ["*"]
+
   # GitHub Actions utilisées dans .github/workflows/
   - package-ecosystem: github-actions
     directory: /

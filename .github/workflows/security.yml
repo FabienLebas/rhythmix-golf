@@ -1,6 +1,7 @@
 name: Sécurité des dépendances
 
-# Vérifie les versions figées dans pubspec.lock contre la base de failles
+# Vérifie les versions figées dans pubspec.lock (app) et package-lock.json
+# (outils de test du site) contre la base de failles
 # connues OSV (osv.dev). Le build échoue si une faille connue est trouvée.
 # Tourne à chaque push, sur chaque PR, et chaque lundi (une faille peut être
 # découverte dans une librairie même si le code n'a pas changé).
@@ -27,3 +28,4 @@ jobs:
         with:
           scan-args: |-
             --lockfile=rhythmix_golf_flutter/pubspec.lock
+            --lockfile=package-lock.json
