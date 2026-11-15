@@ -294,17 +294,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String freeIntro(int count, String priceClause) {
-    return '🎁 Les $count premières analyses vidéo sont gratuites. Ensuite, un seul paiement, pour le prix d’un seau de balles$priceClause.';
+    return '🎁 Les $count premières analyses vidéo sont gratuites. Ensuite, un seul paiement, pour le prix d’un seau de balles$priceClause, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.';
   }
 
   @override
   String freeLeft(int left, int count, String priceClause) {
-    return '🎁 Analyses gratuites : il t’en reste $left sur $count. Ensuite, un seul paiement, pour le prix d’un seau de balles$priceClause.';
+    return '🎁 Analyses gratuites : il t’en reste $left sur $count. Ensuite, un seul paiement, pour le prix d’un seau de balles$priceClause, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.';
   }
 
   @override
   String freeUsed(int count, String priceClause) {
-    return '🔒 Tes $count analyses gratuites sont utilisées. Pour le prix d’un seau de balles$priceClause, une seule fois.';
+    return '🔒 Tes $count analyses gratuites sont utilisées. Un seul paiement, pour le prix d’un seau de balles$priceClause, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.';
   }
 
   @override
@@ -331,7 +331,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get payBody =>
-      'Débloque les analyses vidéo illimitées avec un seul paiement : pas d’abonnement, pas de mauvaise surprise. Le métronome et ton historique restent gratuits.';
+      'Débloque les analyses vidéo illimitées avec un seul paiement : pas d’abonnement, pas de mauvaise surprise.';
 
   @override
   String get payLaunchLabel => 'Prix de lancement';

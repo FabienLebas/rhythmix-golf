@@ -95,7 +95,8 @@ void main() {
       expect(
           find.text('🎁 Les 3 premières analyses vidéo sont gratuites. Ensuite, un seul paiement, '
               'pour le prix d’un seau de balles : 2,99 € en prix de lancement, '
-              'puis ${fmtMoney(4.99, 'EUR', 'fr')}.'),
+              'puis ${fmtMoney(4.99, 'EUR', 'fr')}, et tu auras l’app pour analyser autant de swings '
+              'que tu veux et ainsi vérifier tes progrès dans le temps.'),
           findsOneWidget);
       expect(find.text('Débloquer'), findsNothing);
     });
@@ -129,7 +130,9 @@ void main() {
       await open(t);
       expect(find.text('Pour le prix d’un seau de balles'), findsOneWidget);
       expect(find.text('Tes 3 analyses gratuites sont utilisées.'), findsOneWidget);
-      expect(find.textContaining('Le métronome et ton historique restent gratuits.'), findsOneWidget);
+      expect(find.text('Débloque les analyses vidéo illimitées avec un seul paiement : pas d’abonnement, pas de mauvaise surprise.'),
+          findsOneWidget);
+      expect(find.textContaining('restent gratuits'), findsNothing);
       expect(find.text('Débloquer pour 2,99 €'), findsOneWidget);
       expect(find.text('Restaurer mes achats'), findsOneWidget);
       expect(find.text('Fermer'), findsOneWidget);

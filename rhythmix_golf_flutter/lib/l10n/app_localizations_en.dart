@@ -294,17 +294,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String freeIntro(int count, String priceClause) {
-    return '🎁 The first $count video analyses are free. After that, a single payment, for the price of a bucket of range balls$priceClause.';
+    return '🎁 The first $count video analyses are free. After that, a single payment, for the price of a bucket of range balls$priceClause, and you’ll have the app to analyze as many swings as you want and track your progress over time.';
   }
 
   @override
   String freeLeft(int left, int count, String priceClause) {
-    return '🎁 Free analyses: $left of $count left. After that, a single payment, for the price of a bucket of range balls$priceClause.';
+    return '🎁 Free analyses: $left of $count left. After that, a single payment, for the price of a bucket of range balls$priceClause, and you’ll have the app to analyze as many swings as you want and track your progress over time.';
   }
 
   @override
   String freeUsed(int count, String priceClause) {
-    return '🔒 Your $count free analyses have been used. For the price of a bucket of range balls$priceClause, one time only.';
+    return '🔒 Your $count free analyses have been used. A single payment, for the price of a bucket of range balls$priceClause, and you’ll have the app to analyze as many swings as you want and track your progress over time.';
   }
 
   @override
@@ -331,7 +331,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get payBody =>
-      'Unlock unlimited video analyses with a single payment: no subscription, no surprises. The metronome and your history stay free.';
+      'Unlock unlimited video analyses with a single payment: no subscription, no surprises.';
 
   @override
   String get payLaunchLabel => 'Launch price';

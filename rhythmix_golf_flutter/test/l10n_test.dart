@@ -34,6 +34,10 @@ Set<String> placeholders(String msg) {
   return names;
 }
 
+// Fin des phrases qui incitent à payer (encadré de gratuité).
+const enMore = ', and you’ll have the app to analyze as many swings as you want and track your progress over time.';
+const esMore = ', y tendrás la app para analizar tantos swings como quieras y así comprobar tus progresos con el tiempo.';
+
 void main() {
   setUpAll(() => initializeDateFormatting());
   setUp(() => installFakeStore());
@@ -207,13 +211,15 @@ void main() {
       installFakeStore(products: [fakeProduct(price: r'$2.99', raw: 2.99, currency: 'USD')]);
       await pumpApp(t, locale: en, prefs: {'free_analyses_used': 3});
       expect(
-          find.textContaining('🔒 Your 3 free analyses have been used. For the price of a bucket of range balls: '
-              r'$2.99 launch price, then $4.99, one time only.'),
+          find.textContaining('🔒 Your 3 free analyses have been used. A single payment, for the price of a bucket of range balls: '
+              '\$2.99 launch price, then \$4.99$enMore'),
           findsOneWidget);
       await t.tap(find.text('Unlock'));
       await t.pumpAndSettle();
       expect(find.text('For the price of a bucket of range balls'), findsOneWidget);
       expect(find.text('Your 3 free analyses have been used.'), findsOneWidget);
+      expect(find.text('Unlock unlimited video analyses with a single payment: no subscription, no surprises.'),
+          findsOneWidget);
       expect(find.text(r'Unlock for $2.99'), findsOneWidget);
       expect(find.text('Restore purchases'), findsOneWidget);
       expect(find.text('Close'), findsOneWidget);
@@ -226,14 +232,14 @@ void main() {
       await pumpApp(t, locale: en);
       expect(
           find.text('🎁 The first 3 video analyses are free. After that, a single payment, '
-              'for the price of a bucket of range balls: £2.99 launch price, then £4.99.'),
+              'for the price of a bucket of range balls: £2.99 launch price, then £4.99$enMore'),
           findsOneWidget);
     });
 
     testWidgets('prix normal atteint (4,99) : plus aucune mention de lancement', (t) async {
       installFakeStore(products: [fakeProduct(price: r'$4.99', raw: 4.99, currency: 'USD')]);
       await pumpApp(t, locale: en, prefs: {'free_analyses_used': 3});
-      expect(find.textContaining(r'For the price of a bucket of range balls: $4.99, one time only.'), findsOneWidget);
+      expect(find.textContaining('A single payment, for the price of a bucket of range balls: \$4.99$enMore'), findsOneWidget);
       expect(find.textContaining('launch price'), findsNothing);
       await t.tap(find.text('Unlock'));
       await t.pumpAndSettle();
@@ -245,7 +251,7 @@ void main() {
     testWidgets('devise sans prix normal connu (CAD) : prix du store seul', (t) async {
       installFakeStore(products: [fakeProduct(price: r'CA$3.99', raw: 3.99, currency: 'CAD')]);
       await pumpApp(t, locale: en);
-      expect(find.textContaining(r'a bucket of range balls: CA$3.99.'), findsOneWidget);
+      expect(find.textContaining('a bucket of range balls: CA\$3.99$enMore'), findsOneWidget);
       expect(find.textContaining('launch price'), findsNothing);
     });
 
@@ -254,7 +260,7 @@ void main() {
       await pumpApp(t, locale: en);
       expect(
           find.text('🎁 The first 3 video analyses are free. After that, a single payment, '
-              'for the price of a bucket of range balls.'),
+              'for the price of a bucket of range balls$enMore'),
           findsOneWidget);
     });
 
@@ -335,7 +341,7 @@ void main() {
       await pumpApp(t, locale: es);
       expect(
           find.text('🎁 Los primeros 3 análisis de video son gratis. Después, un solo pago, '
-              'por el precio de un cubo de bolas: 2,99 € de precio de lanzamiento, luego ${fmtMoney(4.99, 'EUR', 'es')}.'),
+              'por el precio de un cubo de bolas: 2,99 € de precio de lanzamiento, luego ${fmtMoney(4.99, 'EUR', 'es')}$esMore'),
           findsOneWidget);
     });
 
@@ -351,6 +357,8 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Por el precio de un cubo de bolas'), findsOneWidget);
       expect(find.text('Ya has usado tus 3 análisis gratis.'), findsOneWidget);
+      expect(find.text('Desbloquea los análisis de video ilimitados con un solo pago: sin suscripción, sin sorpresas.'),
+          findsOneWidget);
       expect(find.text('Desbloquear por 2,99 €'), findsOneWidget);
       expect(find.text('Restaurar mis compras'), findsOneWidget);
       expect(find.text('Cerrar'), findsOneWidget);

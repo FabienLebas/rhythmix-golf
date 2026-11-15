@@ -294,17 +294,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String freeIntro(int count, String priceClause) {
-    return '🎁 Los primeros $count análisis de video son gratis. Después, un solo pago, por el precio de un cubo de bolas$priceClause.';
+    return '🎁 Los primeros $count análisis de video son gratis. Después, un solo pago, por el precio de un cubo de bolas$priceClause, y tendrás la app para analizar tantos swings como quieras y así comprobar tus progresos con el tiempo.';
   }
 
   @override
   String freeLeft(int left, int count, String priceClause) {
-    return '🎁 Análisis gratis: te quedan $left de $count. Después, un solo pago, por el precio de un cubo de bolas$priceClause.';
+    return '🎁 Análisis gratis: te quedan $left de $count. Después, un solo pago, por el precio de un cubo de bolas$priceClause, y tendrás la app para analizar tantos swings como quieras y así comprobar tus progresos con el tiempo.';
   }
 
   @override
   String freeUsed(int count, String priceClause) {
-    return '🔒 Ya has usado tus $count análisis gratis. Por el precio de un cubo de bolas$priceClause, una sola vez.';
+    return '🔒 Ya has usado tus $count análisis gratis. Un solo pago, por el precio de un cubo de bolas$priceClause, y tendrás la app para analizar tantos swings como quieras y así comprobar tus progresos con el tiempo.';
   }
 
   @override
@@ -331,7 +331,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get payBody =>
-      'Desbloquea los análisis de video ilimitados con un solo pago: sin suscripción, sin sorpresas. El metrónomo y tu historial siguen siendo gratis.';
+      'Desbloquea los análisis de video ilimitados con un solo pago: sin suscripción, sin sorpresas.';
 
   @override
   String get payLaunchLabel => 'Precio de lanzamiento';

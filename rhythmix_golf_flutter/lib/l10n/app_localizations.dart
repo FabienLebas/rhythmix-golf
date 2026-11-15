@@ -475,19 +475,19 @@ abstract class AppLocalizations {
   /// No description provided for @freeIntro.
   ///
   /// In fr, this message translates to:
-  /// **'🎁 Les {count} premières analyses vidéo sont gratuites. Ensuite, un seul paiement, pour le prix d’un seau de balles{priceClause}.'**
+  /// **'🎁 Les {count} premières analyses vidéo sont gratuites. Ensuite, un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.'**
   String freeIntro(int count, String priceClause);
 
   /// No description provided for @freeLeft.
   ///
   /// In fr, this message translates to:
-  /// **'🎁 Analyses gratuites : il t’en reste {left} sur {count}. Ensuite, un seul paiement, pour le prix d’un seau de balles{priceClause}.'**
+  /// **'🎁 Analyses gratuites : il t’en reste {left} sur {count}. Ensuite, un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.'**
   String freeLeft(int left, int count, String priceClause);
 
   /// No description provided for @freeUsed.
   ///
   /// In fr, this message translates to:
-  /// **'🔒 Tes {count} analyses gratuites sont utilisées. Pour le prix d’un seau de balles{priceClause}, une seule fois.'**
+  /// **'🔒 Tes {count} analyses gratuites sont utilisées. Un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.'**
   String freeUsed(int count, String priceClause);
 
   /// No description provided for @unlock.
@@ -517,7 +517,7 @@ abstract class AppLocalizations {
   /// No description provided for @payBody.
   ///
   /// In fr, this message translates to:
-  /// **'Débloque les analyses vidéo illimitées avec un seul paiement : pas d’abonnement, pas de mauvaise surprise. Le métronome et ton historique restent gratuits.'**
+  /// **'Débloque les analyses vidéo illimitées avec un seul paiement : pas d’abonnement, pas de mauvaise surprise.'**
   String get payBody;
 
   /// No description provided for @payLaunchLabel.
