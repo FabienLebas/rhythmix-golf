@@ -67,6 +67,8 @@ class _VideoCardState extends State<VideoCard> {
   late String _lastMode;
   int _job = 0;
   String _videoId = '';
+  // Mode dans lequel la vidéo a été choisie : seul cet historique reçoit le point.
+  String _videoMode = '';
 
   AppState get s => widget.state;
 
@@ -118,6 +120,7 @@ class _VideoCardState extends State<VideoCard> {
     final path = x.path;
     final job = ++_job;
     _videoId = DateTime.now().millisecondsSinceEpoch.toString();
+    _videoMode = s.mode;
     final old = List<ui.Image>.from(_thumbs);
     setState(() {
       _path = path;
@@ -325,7 +328,9 @@ class _VideoCardState extends State<VideoCard> {
     final (b, d) = md;
     if (b <= 0 || d <= 0) return;
     s.applyTarget(d * s.ratioTarget, d);
-    if (_videoId.isNotEmpty) s.recordTempo(_videoId, b, d);
+    // Changer de mode avec la vidéo chargée relance la détection : ne pas
+    // enregistrer cette même vidéo dans l'historique de l'autre mode.
+    if (_videoId.isNotEmpty && s.mode == _videoMode) s.recordTempo(_videoId, b, d);
   }
 
   // ---------- Interface ----------
