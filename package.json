@@ -8,6 +8,6 @@
     "fixtures": "python3 tests/fixtures/make_swing_video.py && node tests/fixtures/generate-detection-cases.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.63.0"
+    "@playwright/test": "1.65.0"
   }
 }
