@@ -179,8 +179,11 @@ void main() {
     await t.pumpAndSettle();
     expect(s.history['putt'], isEmpty);
 
-    // 2e vidéo, choisie en putting.
-    await analyse(t);
+    // 2e vidéo, choisie en putting. Le message « Détection terminée » de la 1re est encore
+    // affiché : on attend donc la 2e analyse via le compteur d'analyses gratuites.
+    await t.tap(find.text('Choisir une vidéo'));
+    await pumpUntil(t, () => s.purchase.used == 2);
+    await t.pumpAndSettle();
     expect(picker.calls.length, 2);
     expect(s.history['putt']!.length, 1);
     expect(s.history['grand']!.length, 1);
@@ -190,7 +193,10 @@ void main() {
     await t.pumpAndSettle();
     expect(s.history['grand']!.length, 1, reason: 'la vidéo de putting ne doit pas entrer au grand jeu');
     expect(s.history['putt']!.length, 1);
-    expect(s.history['grand']!.single.id, isNot(s.history['putt']!.single.id.replaceAll('-putt', '-grand')));
+    expect(s.history['grand']!.single.id, endsWith('-grand'));
+    expect(s.history['putt']!.single.id, endsWith('-putt'));
+    expect(s.history['grand']!.single.id.split('-').first, isNot(s.history['putt']!.single.id.split('-').first),
+        reason: 'deux vidéos différentes');
   });
 
   testWidgets('sans son exploitable : impact estimé d’après le mouvement', (t) async {
