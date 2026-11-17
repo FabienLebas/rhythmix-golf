@@ -162,8 +162,35 @@ void main() {
     expect(find.textContaining('putt : repérage par le mouvement, sans le son'), findsOneWidget);
     expect(find.textContaining('tempo cible putting 2:1'), findsOneWidget);
     expect(s.purchase.used, 1);
+    // La vidéo a été choisie en grand jeu : elle ne doit pas entrer dans l'historique du putting.
+    expect(s.history['putt'], isEmpty);
+    expect(s.history['grand']!.length, 1);
+  });
+
+  testWidgets('historique : une vidéo par mode, changer de mode ne crée pas de point en double', (t) async {
+    final (s, _, picker) = await setup(t);
+    // 1re vidéo en grand jeu.
+    await analyse(t);
+    expect(s.history['grand']!.length, 1);
+    expect(s.history['putt'], isEmpty);
+
+    // Passage en putting avec la vidéo de grand jeu encore chargée.
+    await t.tap(find.text('⛳ Putting'));
+    await t.pumpAndSettle();
+    expect(s.history['putt'], isEmpty);
+
+    // 2e vidéo, choisie en putting.
+    await analyse(t);
+    expect(picker.calls.length, 2);
     expect(s.history['putt']!.length, 1);
     expect(s.history['grand']!.length, 1);
+
+    // Retour en grand jeu avec la vidéo de putting chargée.
+    await t.tap(find.text('🏌️ Grand jeu'));
+    await t.pumpAndSettle();
+    expect(s.history['grand']!.length, 1, reason: 'la vidéo de putting ne doit pas entrer au grand jeu');
+    expect(s.history['putt']!.length, 1);
+    expect(s.history['grand']!.single.id, isNot(s.history['putt']!.single.id.replaceAll('-putt', '-grand')));
   });
 
   testWidgets('sans son exploitable : impact estimé d’après le mouvement', (t) async {

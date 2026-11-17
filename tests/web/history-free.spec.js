@@ -84,11 +84,14 @@ test.describe('historique', () => {
   test('enregistrement : un point par vidéo et par mode, mis à jour (pas de doublon), 200 maximum', async ({ page }) => {
     const app = await openApp(page);
     const h = await page.evaluate(() => {
+      curMode = 'grand';
       curId = 1; hRecord(900, 300); hRecord(950, 300); // retouche des repères
       curId = 2; hRecord(600, 300);
-      S.mode = 'putt'; curId = 1; hRecord(600, 300);
-      S.mode = 'grand';
+      S.mode = 'putt'; curMode = 'putt'; curId = 1; hRecord(600, 300);
+      S.mode = 'grand'; curMode = 'grand';
       for (let i = 0; i < 205; i++) { curId = 100 + i; hRecord(900, 300); }
+      // vidéo choisie en grand jeu, mode changé sans nouvelle vidéo : rien dans l'autre historique
+      S.mode = 'putt'; curId = 999; hRecord(600, 300); S.mode = 'grand';
       return JSON.parse(localStorage.getItem('tg_hist'));
     });
     expect(h.grand.length).toBe(200);
