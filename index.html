@@ -451,14 +451,14 @@ $("go").onclick=function(){
 };
 
 /* Historique du tempo : stocké sur l'appareil (localStorage), un point par vidéo analysée et par mode */
-var HIST={grand:[],putt:[]},HKEY="tg_hist",HMAX=200,curId=null;
+var HIST={grand:[],putt:[]},HKEY="tg_hist",HMAX=200,curId=null,curMode=null;
 try{var hx=JSON.parse(localStorage.getItem(HKEY)||"null");if(hx){["grand","putt"].forEach(function(k){if(Array.isArray(hx[k]))HIST[k]=hx[k].filter(function(e){return e&&e.r>0})})}}catch(e){}
 function hsave(){try{localStorage.setItem(HKEY,JSON.stringify(HIST))}catch(e){}}
 function hTarget(m){return PARAMS[m].ratioT}
 function hStatus(r,m){var t=hTarget(m);return Math.abs(r-t)<=0.15?"ok":(r>t?"slow":"fast")}
 var HLAB={ok:tr("tempoOk"),slow:tr("tempoSlow"),fast:tr("tempoFast")};
 function hRecord(b,d){
-  if(!curId)return;
+  if(!curId||S.mode!==curMode)return; /* vidéo enregistrée uniquement dans le mode où elle a été choisie */
   var id=curId+"-"+S.mode,L=HIST[S.mode],r=b/d,e=null,i;
   for(i=0;i<L.length;i++)if(L[i].id===id){e=L[i];break}
   if(e){if(Math.abs(e.b-b)<0.5&&Math.abs(e.d-d)<0.5)return;e.b=b;e.d=d;e.r=r}
@@ -775,7 +775,7 @@ async function audioImpact(file){
   }catch(err){}
   return null;
 }
-$('vf').onchange=function(){var f=this.files[0];if(!f)return;curFile=f;curId=Date.now();lastQ=null;lastAu=null;busy=false;n=0;F=[];M=[null,null,null];sel=null;cur=-1;draw();updateUI();$('vmeta').hidden=true;$('vres').textContent=tr('loading');vid.src=URL.createObjectURL(f)};
+$('vf').onchange=function(){var f=this.files[0];if(!f)return;curFile=f;curId=Date.now();curMode=S.mode;lastQ=null;lastAu=null;busy=false;n=0;F=[];M=[null,null,null];sel=null;cur=-1;draw();updateUI();$('vmeta').hidden=true;$('vres').textContent=tr('loading');vid.src=URL.createObjectURL(f)};
 vid.onloadedmetadata=async function(){
   var f=await mp4Fps(curFile);
   if(f&&f>5&&f<500){var fr=Math.round(f*100)/100;$('fps').value=fr;$('vhint').textContent=tr('fpsRead',{fps:dec(fr)});analyze()}

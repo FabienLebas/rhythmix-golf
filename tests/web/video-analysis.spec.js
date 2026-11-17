@@ -121,8 +121,29 @@ test('changer de mode après l’analyse : nouvelle détection en putting, sans 
   expect(m[1]).toBeLessThan(m[2]);
   expect((await state(page)).b).toBeCloseTo((await state(page)).d * 2, 6);
   const h = await stored(page, 'tg_hist');
-  expect([h.grand.length, h.putt.length]).toEqual([1, 1]);
+  // la vidéo a été choisie en grand jeu : pas de point en double dans l'historique du putting
+  expect([h.grand.length, h.putt.length]).toEqual([1, 0]);
   expect(await page.evaluate(() => localStorage.getItem('tg_free'))).toBe('1');
+  await app.noErrors();
+});
+
+test('historique : une vidéo par mode, changer de mode ne crée pas de point en double', async ({ page }) => {
+  const app = await openApp(page);
+  await analyseSwing(page);
+  await page.getByRole('button', { name: /Putting/ }).click();
+  await expect(page.locator('#vhint')).toContainText('putt : repérage par le mouvement');
+  expect((await stored(page, 'tg_hist')).putt).toHaveLength(0);
+
+  // 2e vidéo (autre fichier : le navigateur ignore le même fichier rechoisi), choisie en putting
+  await page.setInputFiles('#vf', path.join(FIXTURES, 'swing_60fps_small.mp4'));
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('tg_free')), { timeout: 120_000 }).toBe('2');
+  await expect.poll(async () => (await stored(page, 'tg_hist')).putt.length).toBe(1);
+
+  // retour au grand jeu avec la vidéo de putting chargée
+  await page.getByRole('button', { name: /Grand jeu/ }).click();
+  await expect(page.locator('#vhint')).toContainText('impact repéré');
+  const h = await stored(page, 'tg_hist');
+  expect([h.grand.length, h.putt.length]).toEqual([1, 1]);
   await app.noErrors();
 });
 
