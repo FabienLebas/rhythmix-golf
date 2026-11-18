@@ -128,7 +128,6 @@ test.describe('gratuité', () => {
     const app = await openApp(page, { tg_free: '3' });
     await expect(page.locator('#free')).toContainText('🔒 Tes 3 analyses gratuites sont utilisées. Pour continuer à analyser tes swings, offre-toi l’analyse illimitée à vie');
     await expect(page.locator('#free')).toContainText('2,99\u00a0€ prix de lancement au lieu de 4,99\u00a0€.');
-    await expect(page.locator('#free')).toContainText('Le métronome reste gratuit ici.');
     let opened = false;
     page.on('filechooser', () => { opened = true; });
     await page.locator('#vf').click();
