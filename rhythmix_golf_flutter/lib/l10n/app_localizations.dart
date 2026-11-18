@@ -487,8 +487,20 @@ abstract class AppLocalizations {
   /// No description provided for @freeUsed.
   ///
   /// In fr, this message translates to:
-  /// **'🔒 Tes {count} analyses gratuites sont utilisées. Un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.'**
+  /// **'🔒 Tes {count} analyses gratuites sont utilisées. Pour continuer à analyser tes swings, offre-toi l’analyse illimitée à vie pour le prix d’un seau de balles !{priceClause}'**
   String freeUsed(int count, String priceClause);
+
+  /// No description provided for @priceEndLaunch.
+  ///
+  /// In fr, this message translates to:
+  /// **' {price} prix de lancement au lieu de {regular}.'**
+  String priceEndLaunch(String price, String regular);
+
+  /// No description provided for @priceEnd.
+  ///
+  /// In fr, this message translates to:
+  /// **' {price}.'**
+  String priceEnd(String price);
 
   /// No description provided for @unlock.
   ///

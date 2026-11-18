@@ -73,7 +73,9 @@
   "priceLaunch": "{price} launch price, then {regular}",
   "freeIntro": "🎁 The first {count} video analyses are free. After that, a single payment, for the price of a bucket of range balls{priceClause}, and you’ll have the app to analyze as many swings as you want and track your progress over time.",
   "freeLeft": "🎁 Free analyses: {left} of {count} left. After that, a single payment, for the price of a bucket of range balls{priceClause}, and you’ll have the app to analyze as many swings as you want and track your progress over time.",
-  "freeUsed": "🔒 Your {count} free analyses have been used. A single payment, for the price of a bucket of range balls{priceClause}, and you’ll have the app to analyze as many swings as you want and track your progress over time.",
+  "freeUsed": "🔒 Your {count} free analyses have been used. To keep analyzing your swings, get unlimited analyses for life for the price of a bucket of range balls!{priceClause}",
+  "priceEndLaunch": " {price} launch price instead of {regular}.",
+  "priceEnd": " {price}.",
   "unlock": "Unlock",
 
   "payTitle": "For the price of a bucket of range balls",

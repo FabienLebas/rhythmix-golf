@@ -179,9 +179,10 @@ tempoOk:"Dans la cible",tempoSlow:"Trop lent",tempoFast:"Trop rapide",
 chartTarget:"cible {t}:1",
 priceClause:" : {p}",
 priceLaunch:"{p} en prix de lancement, puis {r}",
+priceEndLaunch:" {p} prix de lancement au lieu de {r}.",priceEnd:" {p}.",
 freeIntro:"🎁 Les {max} premières analyses vidéo sont gratuites. Ensuite, retrouve Rhythmix Golf dans l’<b>app mobile</b>, pour le prix d’un seau de balles{price}, en un seul paiement.",
 freeLeft:"🎁 Analyses gratuites : il t’en reste {left} sur {max}. Ensuite, télécharge l’<b>app mobile</b> pour le prix d’un seau de balles{price}.",
-freeUsed:"🔒 Tes {max} analyses gratuites sont utilisées. Pour continuer, prends l’<b>app mobile</b> Rhythmix Golf, pour le prix d’un seau de balles{price}, en un seul paiement. Le métronome reste gratuit ici."
+freeUsed:"🔒 Tes {max} analyses gratuites sont utilisées. Pour continuer à analyser tes swings, offre-toi l’analyse illimitée à vie avec l’<b>app mobile</b> Rhythmix Golf, pour le prix d’un seau de balles !{end} Le métronome reste gratuit ici."
 },
 en:{
 modeGrand:"🏌️ Full swing<br><small>3 : 1 tempo</small>",
@@ -238,9 +239,10 @@ tempoOk:"On target",tempoSlow:"Too slow",tempoFast:"Too fast",
 chartTarget:"target {t}:1",
 priceClause:": {p}",
 priceLaunch:"{p} launch price, then {r}",
+priceEndLaunch:" {p} launch price instead of {r}.",priceEnd:" {p}.",
 freeIntro:"🎁 The first {max} video analyses are free. After that, get Rhythmix Golf in the <b>mobile app</b>, for the price of a bucket of range balls{price}, as a single payment.",
 freeLeft:"🎁 Free analyses: {left} of {max} left. After that, download the <b>mobile app</b> for the price of a bucket of range balls{price}.",
-freeUsed:"🔒 Your {max} free analyses have been used. To continue, get the Rhythmix Golf <b>mobile app</b>, for the price of a bucket of range balls{price}, as a single payment. The metronome stays free here."
+freeUsed:"🔒 Your {max} free analyses have been used. To keep analyzing your swings, get unlimited analyses for life with the Rhythmix Golf <b>mobile app</b>, for the price of a bucket of range balls!{end} The metronome stays free here."
 },
 es:{
 modeGrand:"🏌️ Swing completo<br><small>tempo 3 : 1</small>",
@@ -297,9 +299,10 @@ tempoOk:"En el objetivo",tempoSlow:"Demasiado lento",tempoFast:"Demasiado rápid
 chartTarget:"objetivo {t}:1",
 priceClause:": {p}",
 priceLaunch:"{p} de precio de lanzamiento, luego {r}",
+priceEndLaunch:" {p} de precio de lanzamiento en lugar de {r}.",priceEnd:" {p}.",
 freeIntro:"🎁 Los primeros {max} análisis de video son gratis. Después, consigue Rhythmix Golf en la <b>app móvil</b>, por el precio de un cubo de bolas{price}, en un solo pago.",
 freeLeft:"🎁 Análisis gratis: te quedan {left} de {max}. Después, descarga la <b>app móvil</b> por el precio de un cubo de bolas{price}.",
-freeUsed:"🔒 Ya has usado tus {max} análisis gratis. Para continuar, consigue la <b>app móvil</b> de Rhythmix Golf, por el precio de un cubo de bolas{price}, en un solo pago. El metrónomo sigue siendo gratis aquí."
+freeUsed:"🔒 Ya has usado tus {max} análisis gratis. Para seguir analizando tus swings, consigue el análisis ilimitado de por vida con la <b>app móvil</b> de Rhythmix Golf, por el precio de un cubo de bolas.{end} El metrónomo sigue siendo gratis aquí."
 }
 };
 /* Langue de la page : première langue préférée que le site traduit, sinon l'anglais. */
@@ -339,6 +342,10 @@ function money(cur,v){
 }
 /* Fin du lancement : mettre LAUNCH_OFFER à false (le site n'affiche plus que 4,99). */
 var LAUNCH_OFFER=true;
+function priceEnd(){
+  var c=currency();if(!c)return "";
+  return LAUNCH_OFFER?tr("priceEndLaunch",{p:money(c,PRICES[c][0]),r:money(c,PRICES[c][1])}):tr("priceEnd",{p:money(c,PRICES[c][1])});
+}
 function priceClause(){
   var c=currency();if(!c)return "";
   return tr("priceClause",{p:LAUNCH_OFFER?tr("priceLaunch",{p:money(c,PRICES[c][0]),r:money(c,PRICES[c][1])}):money(c,PRICES[c][1])});
@@ -758,7 +765,7 @@ function freeRender(){
   var price=priceClause();
   el.innerHTML=l===FREE_MAX?tr('freeIntro',{max:FREE_MAX,price:price})
     :l>0?tr('freeLeft',{left:l,max:FREE_MAX,price:price})
-    :tr('freeUsed',{max:FREE_MAX,price:price});
+    :tr('freeUsed',{max:FREE_MAX,end:priceEnd()});
 }
 function freeUse(){freeUsed++;try{localStorage.setItem(FKEY,String(freeUsed))}catch(e){}freeRender()}
 $('vf').addEventListener('click',function(e){if(freeLeft()<=0){e.preventDefault();freeRender();$('free').scrollIntoView({block:'center'})}});

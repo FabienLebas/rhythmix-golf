@@ -180,13 +180,22 @@
       "priceClause": { "type": "String" }
     }
   },
-  "freeUsed": "🔒 Tes {count} analyses gratuites sont utilisées. Un seul paiement, pour le prix d’un seau de balles{priceClause}, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.",
+  "freeUsed": "🔒 Tes {count} analyses gratuites sont utilisées. Pour continuer à analyser tes swings, offre-toi l’analyse illimitée à vie pour le prix d’un seau de balles !{priceClause}",
   "@freeUsed": {
     "placeholders": {
       "count": { "type": "int" },
       "priceClause": { "type": "String" }
     }
   },
+  "priceEndLaunch": " {price} prix de lancement au lieu de {regular}.",
+  "@priceEndLaunch": {
+    "placeholders": {
+      "price": { "type": "String" },
+      "regular": { "type": "String" }
+    }
+  },
+  "priceEnd": " {price}.",
+  "@priceEnd": { "placeholders": { "price": { "type": "String" } } },
   "unlock": "Débloquer",
 
   "payTitle": "Pour le prix d’un seau de balles",
