@@ -304,7 +304,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String freeUsed(int count, String priceClause) {
-    return '🔒 Ya has usado tus $count análisis gratis. Para seguir analizando tus swings, consigue el análisis ilimitado de por vida por el precio de un cubo de bolas.$priceClause';
+    return '🔒 Ya has usado tus $count análisis gratis. Para seguir analizando tus swings, consigue el análisis ilimitado de por vida, ¡por el precio de un cubo de bolas!$priceClause';
   }
 
   @override

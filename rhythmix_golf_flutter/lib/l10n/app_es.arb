@@ -73,7 +73,7 @@
   "priceLaunch": "{price} de precio de lanzamiento, luego {regular}",
   "freeIntro": "🎁 Los primeros {count} análisis de video son gratis. Después, un solo pago, por el precio de un cubo de bolas{priceClause}, y tendrás la app para analizar tantos swings como quieras y así comprobar tus progresos con el tiempo.",
   "freeLeft": "🎁 Análisis gratis: te quedan {left} de {count}. Después, un solo pago, por el precio de un cubo de bolas{priceClause}, y tendrás la app para analizar tantos swings como quieras y así comprobar tus progresos con el tiempo.",
-  "freeUsed": "🔒 Ya has usado tus {count} análisis gratis. Para seguir analizando tus swings, consigue el análisis ilimitado de por vida por el precio de un cubo de bolas.{priceClause}",
+  "freeUsed": "🔒 Ya has usado tus {count} análisis gratis. Para seguir analizando tus swings, consigue el análisis ilimitado de por vida, ¡por el precio de un cubo de bolas!{priceClause}",
   "priceEndLaunch": " {price} de precio de lanzamiento en lugar de {regular}.",
   "priceEnd": " {price}.",
   "unlock": "Desbloquear",
