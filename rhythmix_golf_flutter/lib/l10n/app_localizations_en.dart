@@ -304,7 +304,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String freeUsed(int count, String priceClause) {
-    return '🔒 Your $count free analyses have been used. A single payment, for the price of a bucket of range balls$priceClause, and you’ll have the app to analyze as many swings as you want and track your progress over time.';
+    return '🔒 Your $count free analyses have been used. To keep analyzing your swings, get unlimited analyses for life for the price of a bucket of range balls!$priceClause';
+  }
+
+  @override
+  String priceEndLaunch(String price, String regular) {
+    return ' $price launch price instead of $regular.';
+  }
+
+  @override
+  String priceEnd(String price) {
+    return ' $price.';
   }
 
   @override

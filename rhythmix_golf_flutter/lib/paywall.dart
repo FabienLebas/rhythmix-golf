@@ -26,6 +26,15 @@ String _clause(AppLocalizations l, PurchaseService p) {
   return line == null ? '' : l.priceClause(line);
 }
 
+/// Fin de phrase du message « analyses épuisées » : « 2,99 € prix de lancement
+/// au lieu de 4,99 €. » (ou le prix seul hors lancement). Vide si prix inconnu.
+String _endClause(AppLocalizations l, PurchaseService p) {
+  final price = p.price;
+  if (price == null) return '';
+  final regular = regularPriceText(l, p);
+  return p.isLaunchPrice && regular != null ? l.priceEndLaunch(price, regular) : l.priceEnd(price);
+}
+
 /// Texte d'un message d'achat, dans la langue de l'app.
 String purchaseMessageText(AppLocalizations l, PurchaseMessage m) {
   final d = m.detail;
@@ -56,7 +65,7 @@ class FreeTrialBanner extends StatelessWidget {
     } else if (left > 0) {
       text = l.freeLeft(left, kFreeAnalyses, clause);
     } else {
-      text = l.freeUsed(kFreeAnalyses, clause);
+      text = l.freeUsed(kFreeAnalyses, _endClause(l, purchase));
     }
     return Container(
       width: double.infinity,

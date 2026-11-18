@@ -211,8 +211,8 @@ void main() {
       installFakeStore(products: [fakeProduct(price: r'$2.99', raw: 2.99, currency: 'USD')]);
       await pumpApp(t, locale: en, prefs: {'free_analyses_used': 3});
       expect(
-          find.textContaining('🔒 Your 3 free analyses have been used. A single payment, for the price of a bucket of range balls: '
-              '\$2.99 launch price, then \$4.99$enMore'),
+          find.textContaining('🔒 Your 3 free analyses have been used. To keep analyzing your swings, get unlimited analyses for life '
+              'for the price of a bucket of range balls! \$2.99 launch price instead of \$4.99.'),
           findsOneWidget);
       await t.tap(find.text('Unlock'));
       await t.pumpAndSettle();
@@ -239,7 +239,7 @@ void main() {
     testWidgets('prix normal atteint (4,99) : plus aucune mention de lancement', (t) async {
       installFakeStore(products: [fakeProduct(price: r'$4.99', raw: 4.99, currency: 'USD')]);
       await pumpApp(t, locale: en, prefs: {'free_analyses_used': 3});
-      expect(find.textContaining('A single payment, for the price of a bucket of range balls: \$4.99$enMore'), findsOneWidget);
+      expect(find.textContaining('for the price of a bucket of range balls! \$4.99.'), findsOneWidget);
       expect(find.textContaining('launch price'), findsNothing);
       await t.tap(find.text('Unlock'));
       await t.pumpAndSettle();

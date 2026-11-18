@@ -56,7 +56,6 @@ test.describe('anglais (en-US)', () => {
     await expect(page.locator('#free')).toContainText('Free analyses: 1 of 3 left.');
     await page.evaluate(() => { freeUsed = 3; freeRender(); });
     await expect(page.locator('#free')).toContainText('Your 3 free analyses have been used.');
-    await expect(page.locator('#free')).toContainText('The metronome stays free here.');
   });
 
   test('analyse d’une vidéo : repères, conseil et métronome en anglais', async ({ page }) => {

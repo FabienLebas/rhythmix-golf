@@ -304,7 +304,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String freeUsed(int count, String priceClause) {
-    return '🔒 Tes $count analyses gratuites sont utilisées. Un seul paiement, pour le prix d’un seau de balles$priceClause, et tu auras l’app pour analyser autant de swings que tu veux et ainsi vérifier tes progrès dans le temps.';
+    return '🔒 Tes $count analyses gratuites sont utilisées. Pour continuer à analyser tes swings, offre-toi l’analyse illimitée à vie pour le prix d’un seau de balles !$priceClause';
+  }
+
+  @override
+  String priceEndLaunch(String price, String regular) {
+    return ' $price prix de lancement au lieu de $regular.';
+  }
+
+  @override
+  String priceEnd(String price) {
+    return ' $price.';
   }
 
   @override
