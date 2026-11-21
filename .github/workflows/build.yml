@@ -37,12 +37,40 @@ jobs:
           cache: true
       - name: Préparer le projet
         run: bash tool/bootstrap.sh
+      # Signature de release : si les 4 secrets du dépôt existent, on recrée la
+      # clé et android/key.properties (jamais commités). Sans eux, le build
+      # retombe sur la clé debug : l'APK s'installe, mais le Play Store refuserait le .aab.
+      - name: Préparer la signature Android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            {
+              echo "storePassword=$KEYSTORE_PASSWORD"
+              echo "keyPassword=$KEY_PASSWORD"
+              echo "keyAlias=$KEY_ALIAS"
+              echo "storeFile=$RUNNER_TEMP/upload.jks"
+            } > android/key.properties
+            echo "Signature de release configurée"
+          else
+            echo "::warning::Secrets de signature absents : build signé avec la clé debug (non publiable sur le Play Store)"
+          fi
       - name: Compiler l'APK
         run: flutter build apk --release
+      - name: Compiler le bundle .aab (Play Console)
+        run: flutter build appbundle --release
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rhythmix-golf-android
           path: rhythmix_golf_flutter/build/app/outputs/flutter-apk/app-release.apk
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rhythmix-golf-android-aab
+          path: rhythmix_golf_flutter/build/app/outputs/bundle/release/app-release.aab
 
   ios:
     needs: tests

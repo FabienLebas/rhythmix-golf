@@ -10,10 +10,11 @@ build/
 .idea/
 .DS_Store
 
-# Générés par tool/bootstrap.sh (recréés à chaque compilation CI)
-/packages/rhythmix_native/
-/android/
-/ios/
+# android/, ios/ et packages/rhythmix_native/ sont générés par tool/bootstrap.sh
+# puis commités (identifiants, signature). Jamais les clés de signature :
+/android/key.properties
+*.jks
+*.keystore
 
 # Artefacts
 *.ipa
