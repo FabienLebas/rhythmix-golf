@@ -34,7 +34,7 @@ if [ ! -d android ] || [ ! -d ios ]; then
   rm -f test/widget_test.dart
 fi
 
-# 3. Nom affiché, permissions caméra / micro / photos, son en arrière-plan
+# 3. Nom affiché, langues, permissions caméra / micro / photos, son en arrière-plan
 python3 - <<'PY'
 import plistlib, re, pathlib
 
@@ -43,9 +43,14 @@ with plist.open('rb') as f:
     d = plistlib.load(f)
 d['CFBundleDisplayName'] = 'Rhythmix Golf'
 d['CFBundleName'] = 'Rhythmix Golf'
-d['NSCameraUsageDescription'] = 'Rhythmix Golf filme ton swing pour mesurer ton tempo.'
-d['NSMicrophoneUsageDescription'] = "Le son de la vidéo sert à repérer l'impact de la balle."
-d['NSPhotoLibraryUsageDescription'] = "Rhythmix Golf ouvre les vidéos de ton swing pour les analyser."
+# Langues de l'app (lib/l10n/*.arb) : sans cette liste, iOS ne transmet pas
+# l'espagnol ni le français à Flutter et l'app reste en anglais.
+d['CFBundleLocalizations'] = ['en', 'es', 'fr']
+d['CFBundleDevelopmentRegion'] = 'en'
+# Autorisations : texte par défaut en anglais (langue de repli de l'App Store).
+d['NSCameraUsageDescription'] = 'Rhythmix Golf records your swing to measure your tempo.'
+d['NSMicrophoneUsageDescription'] = 'The video sound is used to detect the moment the ball is struck.'
+d['NSPhotoLibraryUsageDescription'] = 'Rhythmix Golf opens the videos of your swing so it can analyze them.'
 modes = d.get('UIBackgroundModes', [])
 if 'audio' not in modes:
     modes.append('audio')

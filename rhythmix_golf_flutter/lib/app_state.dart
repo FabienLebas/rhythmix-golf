@@ -50,12 +50,6 @@ TempoStatus tempoStatus(double ratio, int target) {
   return ratio > target ? TempoStatus.slow : TempoStatus.fast;
 }
 
-String tempoStatusLabel(TempoStatus s) => switch (s) {
-      TempoStatus.ok => 'Dans la cible',
-      TempoStatus.slow => 'Trop lent',
-      TempoStatus.fast => 'Trop rapide',
-    };
-
 class AppState extends ChangeNotifier {
   /// [metronome] et [purchase] peuvent être remplacés dans les tests.
   AppState({Metronome? metronome, PurchaseService? purchase})
@@ -270,5 +264,3 @@ Tempo _snap(double b, double d, double r, int target) {
   }
   return Tempo(max(0.01, round2(b)), max(0.01, round2(d)));
 }
-
-String fmt2(double x) => x.toStringAsFixed(2).replaceAll('.', ',');

@@ -73,6 +73,14 @@ Si tu corriges les repères à la main, le point de cette vidéo est mis à jour
 
 ---
 
+## Langues
+
+Le site existe en **français, anglais et espagnol**. Il prend la première langue préférée du navigateur qu'il traduit, sinon l'**anglais**. Nombres et dates suivent la langue (`0,81 s` / `0.81 s`, `14 mars` / `Mar 14` / `14 mar`).
+
+- Les textes sont dans l'objet `I18N` au début du script de `index.html` (blocs `fr`, `en`, `es`, mêmes clés et mêmes `{variables}`). Les textes fixes de la page portent un attribut `data-i18n` (texte) ou `data-i18n-html` (avec gras ou retour à la ligne).
+- Les prix de la phrase « analyses gratuites » suivent le pays de la langue du navigateur (zone euro, États-Unis, Royaume-Uni, Canada, Australie, Suisse, Japon, Corée du Sud, Brésil, Mexique), avec la même grille que l'app (`PRICES` dans `index.html`, tableau dans `rhythmix_golf_flutter/README.md`). Une langue non traduite garde les textes en anglais mais le prix de son pays (`ja-JP` → `¥480 … ¥800`). Navigateur sans pays (`en`, `fr`, `es`) : dollars pour `en`, euros sinon. Pays absent de la grille : aucun prix (c'est le store de l'app qui l'affiche). Fin du lancement : `LAUNCH_OFFER = false`.
+- Les tests (`tests/web/i18n.spec.js`) changent la langue du navigateur ; les autres tests tournent en `fr-FR`.
+
 ## Comment fonctionne la détection
 
 Tout se passe **dans le navigateur** : aucune vidéo n'est envoyée sur un serveur.

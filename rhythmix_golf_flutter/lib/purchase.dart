@@ -12,12 +12,44 @@ const int kFreeAnalyses = 3;
 /// l'identique dans App Store Connect et dans la Google Play Console.
 const String kProductId = 'rhythmix_golf_unlock';
 
-/// Textes de prix. Le vrai prix est celui fixé dans les stores (affiché tel quel
-/// quand le store répond). Quand le prix de lancement prend fin : passer le prix
-/// à 4,99 € dans les stores, puis mettre [kLaunchOffer] à false.
-const bool kLaunchOffer = true;
-const String kLaunchPrice = '2,99 €';
-const String kRegularPrice = '4,99 €';
+/// Prix « normal » (après le lancement), par devise (code ISO 4217).
+///
+/// Les prix eux-mêmes se règlent dans App Store Connect et la Google Play
+/// Console, pays par pays : l'app affiche toujours celui que le store renvoie.
+/// Ce tableau sert seulement à écrire « prix de lancement, puis 4,99 € » et à
+/// barrer l'ancien prix. Prix de lancement correspondants, à régler dans les
+/// stores : 2,99 € / 2,99 $ / 2,99 £ / 3,99 CAD / 4,49 AUD / 2,90 CHF /
+/// 480 JPY / 4 400 KRW / 14,90 BRL / 59 MXN.
+///
+/// - Pas de ligne pour une devise : l'app affiche le prix du store tel quel,
+///   sans mention de lancement.
+/// - Quand le prix du store atteint ce prix normal, la mention disparaît toute
+///   seule, y compris dans les versions déjà installées : il n'y a rien à
+///   changer dans l'app au passage à 4,99.
+const Map<String, double> kRegularPrices = {
+  'EUR': 4.99,
+  'USD': 4.99,
+  'GBP': 4.99,
+  'CAD': 6.99,
+  'AUD': 7.99,
+  'CHF': 4.90,
+  'JPY': 800,
+  'KRW': 6900,
+  'BRL': 24.90,
+  'MXN': 99,
+};
+
+/// Problèmes d'achat à signaler à l'utilisateur. Le texte est choisi par
+/// l'interface (paywall.dart), selon la langue.
+enum PurchaseIssue { buyUnavailable, buyFailed, restoreFailed, nothingToRestore, storeUnavailable }
+
+class PurchaseMessage {
+  const PurchaseMessage(this.issue, [this.detail]);
+  final PurchaseIssue issue;
+
+  /// Détail technique éventuel (message du store ou de l'erreur).
+  final String? detail;
+}
 
 const String _kUsedKey = 'free_analyses_used';
 const String _kUnlockedKey = 'unlocked';
@@ -32,7 +64,7 @@ class PurchaseService extends ChangeNotifier {
   bool unlocked = false;
   bool storeAvailable = false;
   bool purchasing = false;
-  String? message;
+  PurchaseMessage? message;
   ProductDetails? product;
 
   SharedPreferences? _prefs;
@@ -41,8 +73,19 @@ class PurchaseService extends ChangeNotifier {
   int get remaining => math.max(0, kFreeAnalyses - used);
   bool get canAnalyze => unlocked || remaining > 0;
 
-  /// Prix affiché : celui du store si disponible, sinon le prix annoncé.
-  String get price => product?.price ?? (kLaunchOffer ? kLaunchPrice : kRegularPrice);
+  /// Prix affiché : celui du store, dans la devise du pays du compte.
+  /// Null tant que le store n'a pas répondu (ou s'il est indisponible).
+  String? get price => product?.price;
+
+  /// Prix normal dans la devise du store, si on le connaît ([kRegularPrices]).
+  double? get regularPrice => kRegularPrices[product?.currencyCode];
+
+  /// Vrai quand le prix du store est inférieur au prix normal : on est en
+  /// période de lancement.
+  bool get isLaunchPrice {
+    final p = product, r = regularPrice;
+    return p != null && r != null && p.rawPrice > 0 && p.rawPrice < r - 0.005;
+  }
 
   /// Charge l'état local (rapide), puis interroge le store sans bloquer le démarrage.
   Future<void> init() async {
@@ -92,7 +135,7 @@ class PurchaseService extends ChangeNotifier {
     final p = product;
     if (purchasing) return;
     if (!storeAvailable || p == null) {
-      message = 'Achat indisponible pour le moment. Vérifie ta connexion et réessaie.';
+      message = const PurchaseMessage(PurchaseIssue.buyUnavailable);
       notifyListeners();
       return;
     }
@@ -106,7 +149,7 @@ class PurchaseService extends ChangeNotifier {
       if (!started) purchasing = false;
     } catch (e) {
       purchasing = false;
-      message = 'Achat impossible ($e).';
+      message = PurchaseMessage(PurchaseIssue.buyFailed, '$e');
     }
     notifyListeners();
   }
@@ -116,7 +159,7 @@ class PurchaseService extends ChangeNotifier {
   Future<void> restore() async {
     if (purchasing) return;
     if (!storeAvailable) {
-      message = 'Store indisponible pour le moment.';
+      message = const PurchaseMessage(PurchaseIssue.storeUnavailable);
       notifyListeners();
       return;
     }
@@ -129,13 +172,13 @@ class PurchaseService extends ChangeNotifier {
       Future.delayed(const Duration(seconds: 6), () {
         if (purchasing && !unlocked) {
           purchasing = false;
-          message = 'Aucun achat à restaurer sur ce compte.';
+          message = const PurchaseMessage(PurchaseIssue.nothingToRestore);
           notifyListeners();
         }
       });
     } catch (e) {
       purchasing = false;
-      message = 'Restauration impossible ($e).';
+      message = PurchaseMessage(PurchaseIssue.restoreFailed, '$e');
       notifyListeners();
     }
   }
@@ -154,7 +197,7 @@ class PurchaseService extends ChangeNotifier {
           _unlock();
         case PurchaseStatus.error:
           purchasing = false;
-          message = 'Achat impossible${d.error == null ? '' : ' (${d.error!.message})'}.';
+          message = PurchaseMessage(PurchaseIssue.buyFailed, d.error?.message);
         case PurchaseStatus.canceled:
           purchasing = false;
       }

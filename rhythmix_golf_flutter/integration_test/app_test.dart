@@ -53,6 +53,10 @@ Future<AppState> _startApp(WidgetTester t) async {
   await p.clear();
   final s = AppState();
   await s.load();
+  // Les vérifications portent sur les textes français, quelle que soit la
+  // langue de l'appareil ou de l'émulateur.
+  t.platformDispatcher.localesTestValue = const [Locale('fr')];
+  addTearDown(t.platformDispatcher.clearLocalesTestValue);
   await t.pumpWidget(RhythmixApp(state: s));
   await t.pumpAndSettle();
   return s;

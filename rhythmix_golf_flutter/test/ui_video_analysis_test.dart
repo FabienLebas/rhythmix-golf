@@ -94,7 +94,7 @@ void main() {
     expect(s.purchase.used, 1);
     expect(find.textContaining('il t’en reste 2 sur 3'), findsOneWidget);
     expect(find.text('Vidéo : 120 × 216 · 60 images/s · 2,0 s'), findsOneWidget);
-    expect(find.text('Image ${m[0]} / 119 · ${(m[0] / 60).toStringAsFixed(3)} s'), findsOneWidget);
+    expect(find.text('Image ${m[0]} / 119 · ${(m[0] / 60).toStringAsFixed(3).replaceAll('.', ',')} s'), findsOneWidget);
   });
 
   testWidgets('« Filmer » ouvre la caméra', (t) async {
@@ -148,7 +148,7 @@ void main() {
     await t.tap(find.text('+5'));
     await t.pump();
     expect(markerText(t, 'Départ'), 'Départ · ${m[0]}');
-    expect(find.text('Image ${m[0] + 5} / 119 · ${((m[0] + 5) / 60).toStringAsFixed(3)} s'), findsOneWidget);
+    expect(find.text('Image ${m[0] + 5} / 119 · ${((m[0] + 5) / 60).toStringAsFixed(3).replaceAll('.', ',')} s'), findsOneWidget);
   });
 
   testWidgets('changer de mode après l’analyse : nouvelle détection (putt), sans consommer', (t) async {
@@ -162,8 +162,41 @@ void main() {
     expect(find.textContaining('putt : repérage par le mouvement, sans le son'), findsOneWidget);
     expect(find.textContaining('tempo cible putting 2:1'), findsOneWidget);
     expect(s.purchase.used, 1);
+    // La vidéo a été choisie en grand jeu : elle ne doit pas entrer dans l'historique du putting.
+    expect(s.history['putt'], isEmpty);
+    expect(s.history['grand']!.length, 1);
+  });
+
+  testWidgets('historique : une vidéo par mode, changer de mode ne crée pas de point en double', (t) async {
+    final (s, _, picker) = await setup(t);
+    // 1re vidéo en grand jeu.
+    await analyse(t);
+    expect(s.history['grand']!.length, 1);
+    expect(s.history['putt'], isEmpty);
+
+    // Passage en putting avec la vidéo de grand jeu encore chargée.
+    await t.tap(find.text('⛳ Putting'));
+    await t.pumpAndSettle();
+    expect(s.history['putt'], isEmpty);
+
+    // 2e vidéo, choisie en putting. Le message « Détection terminée » de la 1re est encore
+    // affiché : on attend donc la 2e analyse via le compteur d'analyses gratuites.
+    await t.tap(find.text('Choisir une vidéo'));
+    await pumpUntil(t, () => s.purchase.used == 2);
+    await t.pumpAndSettle();
+    expect(picker.calls.length, 2);
     expect(s.history['putt']!.length, 1);
     expect(s.history['grand']!.length, 1);
+
+    // Retour en grand jeu avec la vidéo de putting chargée.
+    await t.tap(find.text('🏌️ Grand jeu'));
+    await t.pumpAndSettle();
+    expect(s.history['grand']!.length, 1, reason: 'la vidéo de putting ne doit pas entrer au grand jeu');
+    expect(s.history['putt']!.length, 1);
+    expect(s.history['grand']!.single.id, endsWith('-grand'));
+    expect(s.history['putt']!.single.id, endsWith('-putt'));
+    expect(s.history['grand']!.single.id.split('-').first, isNot(s.history['putt']!.single.id.split('-').first),
+        reason: 'deux vidéos différentes');
   });
 
   testWidgets('sans son exploitable : impact estimé d’après le mouvement', (t) async {
@@ -201,7 +234,7 @@ void main() {
   testWidgets('vidéo trop courte : message, analyse non décomptée', (t) async {
     final (s, _, _) = await setup(t, video: FakeVideo(frames: 6, start: 1, top: 3, impact: 4));
     await analyse(t);
-    expect(find.text('Impossible d’analyser cette vidéo (Exception: vidéo trop courte).'), findsOneWidget);
+    expect(find.text('Impossible d’analyser cette vidéo (vidéo trop courte).'), findsOneWidget);
     expect(s.purchase.used, 0);
     expect(s.history['grand'], isEmpty);
   });
@@ -209,7 +242,7 @@ void main() {
   testWidgets('vidéo sans mouvement : message, analyse non décomptée', (t) async {
     final (s, _, _) = await setup(t, video: FakeVideo(start: 500, top: 600, impact: 700));
     await analyse(t);
-    expect(find.text('Impossible d’analyser cette vidéo (Exception: aucun mouvement détecté).'), findsOneWidget);
+    expect(find.text('Impossible d’analyser cette vidéo (aucun mouvement détecté).'), findsOneWidget);
     expect(s.purchase.used, 0);
   });
 
