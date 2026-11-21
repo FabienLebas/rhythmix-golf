@@ -1,7 +1,8 @@
 # Analyse statique minimale (pas de dépendance à flutter_lints).
 analyzer:
   exclude:
-    - packages/rhythmix_native/example/**
+    # Plugin natif généré (sources pigeon, lints propres) : pas analysé avec l'app
+    - packages/rhythmix_native/**
     - build/**
     - android/**
     - ios/**
