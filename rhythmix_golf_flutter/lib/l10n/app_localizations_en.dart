@@ -72,10 +72,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get metroStart => '▶ Start';
+  String get metroStart => 'Start';
 
   @override
-  String get metroStop => '■ Stop';
+  String get metroStop => 'Stop';
 
   @override
   String get metroHelp =>

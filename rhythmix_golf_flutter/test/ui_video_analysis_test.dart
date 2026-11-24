@@ -59,7 +59,7 @@ void main() {
     expect(find.text('Départ —'), findsOneWidget);
     expect(find.text('Sommet —'), findsOneWidget);
     expect(find.text('Impact —'), findsOneWidget);
-    expect(t.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, '+1 ▶')).onPressed, isNull);
+    expect(t.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, '+1')).onPressed, isNull);
   });
 
   testWidgets('analyse réussie : repères, tempo, conseil, métronome réglé, historique, gratuité', (t) async {
@@ -109,15 +109,15 @@ void main() {
     final m = expectedMarkers(v, 'grand');
     await t.tap(markerButton('Impact'));
     await t.pump();
-    await t.tap(find.text('+1 ▶'));
+    await t.tap(find.text('+1'));
     await t.pump();
     expect(markerText(t, 'Impact'), 'Impact · ${m[2] + 1}');
     await t.tap(find.text('+5'));
     await t.pump();
     expect(markerText(t, 'Impact'), 'Impact · ${m[2] + 6}');
     await t.tap(find.text('−5'));
-    await t.tap(find.text('◀ −1'));
-    await t.tap(find.text('◀ −1'));
+    await t.tap(find.text('−1'));
+    await t.tap(find.text('−1'));
     await t.pump();
     expect(markerText(t, 'Impact'), 'Impact · ${m[2] - 1}');
     final d = (m[2] - 1 - m[1]) / 60;

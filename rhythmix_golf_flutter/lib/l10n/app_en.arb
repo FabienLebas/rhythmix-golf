@@ -20,8 +20,8 @@
   "resetDefaults": "Default values",
   "metroSummary": "Backswing {up} s · Downswing {down} s · Ratio {ratio}:1 · Swing {total} s",
   "pauseBetween": "Pause between swings: {seconds} s",
-  "metroStart": "▶ Start",
-  "metroStop": "■ Stop",
+  "metroStart": "Start",
+  "metroStop": "Stop",
   "metroHelp": "Three sounds per swing: start (low), top of the backswing (medium), impact (high). The sound keeps playing with the screen locked and in silent mode.",
 
   "analyzeTitle": "{mode, select, grand{Analyze a full swing} other{Analyze a putt}}",

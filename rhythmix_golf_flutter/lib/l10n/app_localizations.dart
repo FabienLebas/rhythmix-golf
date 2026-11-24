@@ -199,13 +199,13 @@ abstract class AppLocalizations {
   /// No description provided for @metroStart.
   ///
   /// In fr, this message translates to:
-  /// **'▶ Démarrer'**
+  /// **'Démarrer'**
   String get metroStart;
 
   /// No description provided for @metroStop.
   ///
   /// In fr, this message translates to:
-  /// **'■ Arrêter'**
+  /// **'Arrêter'**
   String get metroStop;
 
   /// No description provided for @metroHelp.
