@@ -31,8 +31,8 @@
   },
   "pauseBetween": "Pause entre deux swings : {seconds} s",
   "@pauseBetween": { "placeholders": { "seconds": { "type": "String" } } },
-  "metroStart": "▶ Démarrer",
-  "metroStop": "■ Arrêter",
+  "metroStart": "Démarrer",
+  "metroStop": "Arrêter",
   "metroHelp": "Trois sons par swing : départ (grave), sommet du backswing (moyen), impact (aigu). Le son continue écran verrouillé et en mode silencieux.",
 
   "analyzeTitle": "{mode, select, grand{Analyser un grand jeu} other{Analyser un putt}}",

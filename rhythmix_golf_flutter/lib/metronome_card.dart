@@ -200,14 +200,17 @@ class _MetronomeCardState extends State<MetronomeCard> {
                 ),
               ),
             ),
-            FilledButton(
+            FilledButton.icon(
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: s.toggleMetronome,
-              child: Text(s.running ? l.metroStop : l.metroStart),
+              // Icône Material plutôt que ▶ / ■ dans le texte : Android affiche
+              // ces caractères en emoji (carré orange), iOS en simple glyphe.
+              icon: Icon(s.running ? Icons.stop_rounded : Icons.play_arrow_rounded, size: 26),
+              label: Text(s.running ? l.metroStop : l.metroStart),
             ),
             const SizedBox(height: 8),
             Text(l.metroHelp, style: muted),

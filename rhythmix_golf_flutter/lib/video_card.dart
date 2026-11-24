@@ -480,11 +480,25 @@ class _VideoCardState extends State<VideoCard> {
             const SizedBox(height: 8),
             Row(
               children: [
-                for (final st in const [(-5, '−5'), (-1, '◀ −1'), (1, '+1 ▶'), (5, '+5')]) ...[
+                // Flèches en icônes : ◀ / ▶ deviendraient des emojis sur Android.
+                // Boutons étroits (4 par ligne) : marges réduites et contenu réduit
+                // si besoin, pour ne jamais déborder sur un petit écran.
+                for (final st in const [(-5, '−5'), (-1, '−1'), (1, '+1'), (5, '+5')]) ...[
                   Expanded(
                     child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4)),
                       onPressed: ready ? () => _step(st.$1) : null,
-                      child: Text(st.$2),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (st.$1 == -1) const Icon(Icons.arrow_left_rounded, size: 22),
+                            Text(st.$2),
+                            if (st.$1 == 1) const Icon(Icons.arrow_right_rounded, size: 22),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   if (st.$1 != 5) const SizedBox(width: 6),

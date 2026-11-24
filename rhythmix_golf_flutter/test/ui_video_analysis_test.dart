@@ -52,6 +52,19 @@ String f2(double x) => x.toStringAsFixed(2).replaceAll('.', ',');
 void main() {
   setUp(() => installFakeStore());
 
+  testWidgets('petit écran (320 px) : les boutons −5 / −1 / +1 / +5 ne débordent pas', (t) async {
+    await pumpApp(t);
+    t.view.physicalSize = const Size(320, 3600);
+    await t.pump();
+    // Un débordement (RenderFlex overflowed) ferait échouer le test.
+    expect(t.takeException(), isNull);
+    expect(find.byIcon(Icons.arrow_left_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_right_rounded), findsOneWidget);
+    for (final l in ['−5', '−1', '+1', '+5']) {
+      expect(find.widgetWithText(OutlinedButton, l), findsOneWidget);
+    }
+  });
+
   testWidgets('avant toute vidéo : boutons de repères inactifs', (t) async {
     await setup(t);
     expect(find.text('Filmer'), findsOneWidget);
@@ -59,7 +72,7 @@ void main() {
     expect(find.text('Départ —'), findsOneWidget);
     expect(find.text('Sommet —'), findsOneWidget);
     expect(find.text('Impact —'), findsOneWidget);
-    expect(t.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, '+1 ▶')).onPressed, isNull);
+    expect(t.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, '+1')).onPressed, isNull);
   });
 
   testWidgets('analyse réussie : repères, tempo, conseil, métronome réglé, historique, gratuité', (t) async {
@@ -109,15 +122,15 @@ void main() {
     final m = expectedMarkers(v, 'grand');
     await t.tap(markerButton('Impact'));
     await t.pump();
-    await t.tap(find.text('+1 ▶'));
+    await t.tap(find.text('+1'));
     await t.pump();
     expect(markerText(t, 'Impact'), 'Impact · ${m[2] + 1}');
     await t.tap(find.text('+5'));
     await t.pump();
     expect(markerText(t, 'Impact'), 'Impact · ${m[2] + 6}');
     await t.tap(find.text('−5'));
-    await t.tap(find.text('◀ −1'));
-    await t.tap(find.text('◀ −1'));
+    await t.tap(find.text('−1'));
+    await t.tap(find.text('−1'));
     await t.pump();
     expect(markerText(t, 'Impact'), 'Impact · ${m[2] - 1}');
     final d = (m[2] - 1 - m[1]) / 60;

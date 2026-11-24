@@ -20,8 +20,8 @@
   "resetDefaults": "Valores predeterminados",
   "metroSummary": "Subida {up} s · Bajada {down} s · Proporción {ratio}:1 · Swing {total} s",
   "pauseBetween": "Pausa entre dos swings: {seconds} s",
-  "metroStart": "▶ Iniciar",
-  "metroStop": "■ Detener",
+  "metroStart": "Iniciar",
+  "metroStop": "Detener",
   "metroHelp": "Tres sonidos por swing: inicio (grave), cima del backswing (medio), impacto (agudo). El sonido sigue con la pantalla bloqueada y en modo silencio.",
 
   "analyzeTitle": "{mode, select, grand{Analizar un swing completo} other{Analizar un putt}}",

@@ -49,7 +49,7 @@ void main() {
     expect(find.text('Montée 0,81 s · Descente 0,27 s · Ratio 3,00:1 · Swing 1,08 s'), findsOneWidget);
     expect(find.text('Vitesse du swing : 100 %'), findsOneWidget);
     expect(find.text('Pause entre deux swings : 3,0 s'), findsOneWidget);
-    expect(find.text('▶ Démarrer'), findsOneWidget);
+    expect(find.text('Démarrer'), findsOneWidget);
     expect(t.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isTrue);
   });
 
@@ -169,14 +169,18 @@ void main() {
   testWidgets('Démarrer / Arrêter le métronome, étiquette du temps en cours', (t) async {
     final m = FakeMetronome();
     await pumpApp(t, metronome: m);
-    await t.tap(find.text('▶ Démarrer'));
+    // Icônes Material (et non ▶ / ■ dans le texte, affichés en emoji sur Android).
+    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    await t.tap(find.text('Démarrer'));
     await t.pump(const Duration(milliseconds: 100));
-    expect(find.text('■ Arrêter'), findsOneWidget);
+    expect(find.text('Arrêter'), findsOneWidget);
+    expect(find.byIcon(Icons.stop_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
     expect(m.starts.single, (0.81, 0.27, 3.0));
     expect(find.text('Départ'), findsOneWidget, reason: 'étiquette du bip en cours');
-    await t.tap(find.text('■ Arrêter'));
+    await t.tap(find.text('Arrêter'));
     await t.pump(const Duration(milliseconds: 100));
-    expect(find.text('▶ Démarrer'), findsOneWidget);
+    expect(find.text('Démarrer'), findsOneWidget);
     expect(m.stops, 1);
     expect(find.text('Départ'), findsNothing);
   });

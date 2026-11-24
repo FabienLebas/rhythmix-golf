@@ -176,7 +176,7 @@ void main() {
       expect(find.text('Backswing 0.81 s · Downswing 0.27 s · Ratio 3.00:1 · Swing 1.08 s'), findsOneWidget);
       expect(find.text('Swing speed: 100%'), findsOneWidget);
       expect(find.text('Pause between swings: 3.0 s'), findsOneWidget);
-      expect(find.text('▶ Start'), findsOneWidget);
+      expect(find.text('Start'), findsOneWidget);
       expect(find.text('Record'), findsOneWidget);
       expect(find.text('Choose a video'), findsOneWidget);
       expect(find.text('Start —'), findsOneWidget);
@@ -199,11 +199,11 @@ void main() {
 
     testWidgets('métronome en marche : le temps en cours est affiché dans la langue', (t) async {
       await pumpApp(t, locale: en);
-      await t.tap(find.text('▶ Start'));
+      await t.tap(find.text('Start'));
       await t.pump(const Duration(milliseconds: 100));
-      expect(find.text('■ Stop'), findsOneWidget);
+      expect(find.text('Stop'), findsOneWidget);
       expect(find.text('Start'), findsOneWidget, reason: 'étiquette du bip en cours');
-      await t.tap(find.text('■ Stop'));
+      await t.tap(find.text('Stop'));
       await t.pumpAndSettle();
     });
 
@@ -339,7 +339,7 @@ void main() {
       expect(find.text('Subida 0,81 s · Bajada 0,27 s · Proporción 3,00:1 · Swing 1,08 s'), findsOneWidget);
       expect(find.text('Velocidad del swing: 100 %'), findsOneWidget);
       expect(find.text('Pausa entre dos swings: 3,0 s'), findsOneWidget);
-      expect(find.text('▶ Iniciar'), findsOneWidget);
+      expect(find.text('Iniciar'), findsOneWidget);
       expect(find.text('Grabar'), findsOneWidget);
       expect(find.text('Elegir un video'), findsOneWidget);
       expect(find.text('Inicio —'), findsOneWidget);

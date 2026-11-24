@@ -158,17 +158,17 @@ void main() {
       expect(find.text('Métronome · putting 2:1'), findsOneWidget);
       expect(find.text('Montée 0,60 s · Descente 0,30 s · Ratio 2,00:1 · Swing 0,90 s'), findsOneWidget);
 
-      await _tapVisible(t, find.text('▶ Démarrer'));
+      await _tapVisible(t, find.text('Démarrer'));
       await t.pump(const Duration(seconds: 1));
       expect(s.running, isTrue);
-      expect(find.text('■ Arrêter'), findsOneWidget);
+      expect(find.text('Arrêter'), findsOneWidget);
       // les étiquettes suivent le son réellement joué
       await _waitFor(t, find.byWidgetPredicate((w) => w is Text && ['Départ', 'Sommet', 'Impact'].contains(w.data)),
           timeout: const Duration(seconds: 10));
-      await _tapVisible(t, find.text('■ Arrêter'));
+      await _tapVisible(t, find.text('Arrêter'));
       await t.pump(const Duration(milliseconds: 500));
       expect(s.running, isFalse);
-      expect(find.text('▶ Démarrer'), findsOneWidget);
+      expect(find.text('Démarrer'), findsOneWidget);
 
       final p = await SharedPreferences.getInstance();
       expect(p.getString('mode'), 'putt', reason: 'réglages enregistrés sur l’appareil');
