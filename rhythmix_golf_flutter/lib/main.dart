@@ -72,6 +72,7 @@ class HomePage extends StatelessWidget {
           builder: (context, c) {
             if (c.maxWidth >= 900) {
               return SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,6 +94,7 @@ class HomePage extends StatelessWidget {
               );
             }
             return ListView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(16),
               children: [modes, const SizedBox(height: 12), metro, const SizedBox(height: 12), video, const SizedBox(height: 12), hist],
             );

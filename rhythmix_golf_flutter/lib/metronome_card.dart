@@ -33,8 +33,9 @@ class _MetronomeCardState extends State<MetronomeCard> {
     _sync();
     s.addListener(_onState);
     // En quittant un champ, on affiche la valeur retenue (arrondie, ratio exact).
-    _bf.addListener(_sync);
-    _df.addListener(_sync);
+    // setState : le bouton « OK » n'apparaît que sur le champ en cours d'édition.
+    _bf.addListener(_onFocus);
+    _df.addListener(_onFocus);
   }
 
   @override
@@ -64,6 +65,11 @@ class _MetronomeCardState extends State<MetronomeCard> {
     if (!_df.hasFocus) _d.text = fmt2(s.cur.d, _loc);
   }
 
+  void _onFocus() {
+    _sync();
+    if (mounted) setState(() {});
+  }
+
   void _onState() {
     _sync();
     if (s.running && _tick == null) {
@@ -88,9 +94,18 @@ class _MetronomeCardState extends State<MetronomeCard> {
     final l = AppLocalizations.of(context);
     final title = l.metroTitle(s.mode);
     final muted = TextStyle(fontSize: 13, color: t.colorScheme.onSurfaceVariant);
-    InputDecoration deco(String label) => InputDecoration(
+    // Le pavé numérique iOS n'a pas de touche « OK » : sans ce bouton (et le
+    // tap en dehors du champ), l'utilisateur ne peut plus fermer le clavier.
+    InputDecoration deco(String label, FocusNode f) => InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          suffixIcon: f.hasFocus
+              ? IconButton(
+                  icon: const Icon(Icons.check),
+                  tooltip: MaterialLocalizations.of(context).okButtonLabel,
+                  onPressed: f.unfocus,
+                )
+              : null,
         );
     return Card(
       child: Padding(
@@ -108,7 +123,9 @@ class _MetronomeCardState extends State<MetronomeCard> {
                     focusNode: _bf,
                     style: const TextStyle(fontSize: 22),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: deco(l.fieldUp),
+                    textInputAction: TextInputAction.done,
+                    onTapOutside: (_) => _bf.unfocus(),
+                    decoration: deco(l.fieldUp, _bf),
                     onChanged: (v) {
                       final x = _parse(v);
                       if (x != null) s.setB(x);
@@ -126,7 +143,9 @@ class _MetronomeCardState extends State<MetronomeCard> {
                     focusNode: _df,
                     style: const TextStyle(fontSize: 22),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: deco(l.fieldDown),
+                    textInputAction: TextInputAction.done,
+                    onTapOutside: (_) => _df.unfocus(),
+                    decoration: deco(l.fieldDown, _df),
                     onChanged: (v) {
                       final x = _parse(v);
                       if (x != null) s.setD(x);

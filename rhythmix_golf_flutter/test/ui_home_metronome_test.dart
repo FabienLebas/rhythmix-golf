@@ -53,6 +53,31 @@ void main() {
     expect(t.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isTrue);
   });
 
+  testWidgets('clavier numérique : on peut le fermer (bouton OK ou tap en dehors)', (t) async {
+    final s = await pumpApp(t);
+    bool focused(String label) => t.widget<TextField>(field(label)).focusNode!.hasFocus;
+    // Bouton OK : visible seulement pendant la saisie, il ferme le clavier.
+    expect(find.byIcon(Icons.check), findsNothing);
+    await t.tap(field('Montée (secondes)'));
+    await t.pump();
+    expect(focused('Montée (secondes)'), isTrue);
+    await t.enterText(field('Montée (secondes)'), '0,9');
+    expect(find.byIcon(Icons.check), findsOneWidget);
+    await t.tap(find.byIcon(Icons.check));
+    await t.pump();
+    expect(focused('Montée (secondes)'), isFalse);
+    expect(find.byIcon(Icons.check), findsNothing);
+    expect(s.cur.b, closeTo(0.9, 1e-9));
+    expect(fieldText(t, 'Montée (secondes)'), '0,90');
+    // Tap en dehors du champ : le clavier se ferme aussi.
+    await t.tap(field('Descente (secondes)'));
+    await t.pump();
+    expect(focused('Descente (secondes)'), isTrue);
+    await t.tapAt(t.getCenter(find.text('Métronome · grand jeu 3:1')));
+    await t.pump();
+    expect(focused('Descente (secondes)'), isFalse);
+  });
+
   testWidgets('passer au putting puis revenir au grand jeu', (t) async {
     final s = await pumpApp(t);
     await t.tap(find.text('⛳ Putting'));
